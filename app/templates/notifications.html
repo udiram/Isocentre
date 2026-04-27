@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Notifications | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Inbox</p>
+  <h1>Notifications and recent messages.</h1>
+  <p>Track moderation updates, course-review activity, and mentor messages without relying on email delivery.</p>
+  <div class="cta-row">
+    <a class="button primary" href="{{ url_for('main.messages') }}">Open messages</a>
+    <a class="button secondary" href="{{ url_for('main.community') }}">Community hub</a>
+    {% if notifications %}
+      <form method="post" action="{{ url_for('main.mark_all_notifications_read') }}">
+        <button class="button secondary" type="submit">Mark all read</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+
+<section class="notification-layout">
+  <div class="notification-feed">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Updates</p>
+        <h2>Notification center</h2>
+      </div>
+    </div>
+    {% for item in notifications %}
+      <article class="notification-card {% if not item.read_at %}unread{% endif %}">
+        <div>
+          <span>{{ item.category|labelize }} · {{ item.created_at.strftime("%b %-d, %Y") }}</span>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.body }}</p>
+        </div>
+        <div class="notification-actions">
+          {% if item.link_url %}
+            <a class="button secondary" href="{{ item.link_url }}">Open</a>
+          {% endif %}
+          {% if not item.read_at %}
+            <form method="post" action="{{ url_for('main.mark_notification_read', notification_id=item.id) }}">
+              <button class="button mini" type="submit">Mark read</button>
+            </form>
+          {% endif %}
+        </div>
+      </article>
+    {% else %}
+      <article class="notification-card">
+        <span>Quiet</span>
+        <h3>No notifications yet</h3>
+        <p>Submit a review, join the mentor directory, save courses, or message mentors to start building activity here.</p>
+      </article>
+    {% endfor %}
+  </div>
+
+  <aside class="notification-sidebar">
+    <div class="dashboard-card">
+      <span>Recent messages</span>
+      {% for message in messages %}
+        <a class="compact-link" href="{{ url_for('main.message_detail', message_id=message.id) }}">
+          <strong>{{ message.subject }}</strong>
+          <small>{{ message.sender.display_name }} · {{ message.created_at.strftime("%b %-d") }}</small>
+        </a>
+      {% else %}
+        <p>No mentor messages yet.</p>
+      {% endfor %}
+      <a class="text-link" href="{{ url_for('main.messages') }}">View all messages</a>
+    </div>
+  </aside>
+</section>
+{% endblock %}

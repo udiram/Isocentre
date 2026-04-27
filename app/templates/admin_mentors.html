@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Admin Mentors | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Admin</p>
+  <h1>Mentor profiles</h1>
+</section>
+<form class="filter-bar" method="get">
+  <label>Status
+    <select name="status">
+      {% for item in ["pending", "awaiting_verification", "approved", "rejected", "hidden", "all"] %}
+        <option value="{{ item }}" {% if status == item %}selected{% endif %}>{{ item.replace("_", " ") }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Search
+    <input name="q" value="{{ query }}" placeholder="name, email, bio">
+  </label>
+  <button class="button secondary" type="submit">Filter</button>
+</form>
+<section class="admin-list">
+  {% for mentor in mentors %}
+    <article class="review-card">
+      <div class="rating-row"><small>{{ mentor.status }}</small><small>{{ mentor.private_email }}</small><small>{{ mentor.role_year }}</small><small>{{ "featured" if mentor.featured else "not featured" }}</small></div>
+      <h3>{{ mentor.display_name }}</h3>
+      <p>{{ mentor.bio }}</p>
+      <p>{{ mentor.pathway_tags|tags }} · {{ mentor.experience_tags|tags }}</p>
+      {% for action,label in [("approve","Approve"),("reject","Reject"),("hide","Hide"),("feature","Feature"),("unfeature","Unfeature")] %}
+        <form class="inline-actions" method="post" action="{{ url_for('main.admin_moderate', target_type='MentorProfile', target_id=mentor.id, action=action) }}"><button class="button {{ 'primary' if action == 'approve' else 'secondary' }}">{{ label }}</button></form>
+      {% endfor %}
+    </article>
+  {% else %}<p>No mentor profiles.</p>{% endfor %}
+  {% if pagination and pagination.pages > 1 %}
+    <nav class="pagination" aria-label="Admin mentor pages">
+      {% if pagination.has_prev %}<a href="{{ url_for('main.admin_mentors', status=status, q=query, page=pagination.prev_num) }}">Previous</a>{% endif %}
+      <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.has_next %}<a href="{{ url_for('main.admin_mentors', status=status, q=query, page=pagination.next_num) }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

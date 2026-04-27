@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Admin | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Admin</p>
+  <h1>Moderation dashboard</h1>
+  <p>Approve verified submissions, inspect content coverage, and keep public community features clean.</p>
+  <div class="cta-row">
+    <a class="button primary" href="{{ url_for('main.admin_reviews') }}">Reviews ({{ counts.reviews }})</a>
+    <a class="button secondary" href="{{ url_for('main.admin_mentors') }}">Mentors ({{ counts.mentors }})</a>
+    <a class="button secondary" href="{{ url_for('main.admin_questions') }}">Questions ({{ counts.questions }})</a>
+    <a class="button secondary" href="{{ url_for('main.admin_pages') }}">Content</a>
+    <a class="button secondary" href="{{ url_for('main.admin_logout') }}">Log out</a>
+  </div>
+</section>
+{% endblock %}

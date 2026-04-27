@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Account Settings | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell">
+  <header class="tool-header">
+    <p class="eyebrow">Account</p>
+    <h1>Profile settings</h1>
+    <p>Use this to tune the dashboard recommendations and saved planning flow.</p>
+  </header>
+  <form class="tool-panel narrow" method="post">
+    <div class="field-grid">
+      <label>Name
+        <input name="display_name" value="{{ user.display_name }}">
+      </label>
+      <label>Stage
+        <select name="stage">
+          {% for stage in stages %}
+            <option value="{{ stage }}" {% if user.stage == stage %}selected{% endif %}>{{ stage }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <label>Pathway interests
+      <input name="pathway_tags" value="{{ user.pathway_tags|tags }}">
+    </label>
+    <label>Main goal
+      <input name="goal" value="{{ user.goal }}">
+    </label>
+    <div class="form-actions">
+      <button class="button primary" type="submit">Save settings</button>
+      <a class="button secondary" href="{{ url_for('main.dashboard') }}">Back to dashboard</a>
+      <a class="button ghost" href="{{ url_for('main.logout') }}">Sign out</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

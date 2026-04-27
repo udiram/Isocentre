@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Message | Isocentre{% endblock %}
+{% block content %}
+<article class="article-shell">
+  <header class="article-header compact">
+    <p class="eyebrow">Message</p>
+    <h1>{{ message.subject }}</h1>
+    <p>{{ message.sender.display_name }} to {{ message.recipient.display_name }} · {{ message.created_at.strftime("%B %-d, %Y") }}</p>
+  </header>
+  <div class="article-layout">
+    <div class="article-body">
+      <h2>Message</h2>
+      <p>{{ message.body }}</p>
+    </div>
+    <aside class="article-aside">
+      <div class="aside-box">
+        <strong>Mentor profile</strong>
+        <p>{{ message.mentor.display_name }} · {{ message.mentor.role_year }}</p>
+        <a href="{{ url_for('main.mentors') }}">Back to directory</a>
+      </div>
+      <div class="aside-box warning">
+        <strong>Keep it useful</strong>
+        <p>Use messages for mentorship, course planning, research, co-op, and pathway questions. Do not share private course materials.</p>
+      </div>
+    </aside>
+  </div>
+</article>
+{% endblock %}

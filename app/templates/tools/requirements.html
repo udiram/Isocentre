@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Requirement Checklist | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell" data-tool="requirements">
+  <div class="tool-header">
+    <p class="eyebrow">Tool</p>
+    <h1>Level II admission checklist</h1>
+    <p>Paste completed or planned courses. The checker gives unofficial statuses: complete, missing, or check with advisor.</p>
+  </div>
+
+  <div class="tool-layout">
+    <form class="tool-panel" id="requirements-form">
+      <label for="completed-courses">Completed courses</label>
+      <textarea id="completed-courses" rows="8" placeholder="Example: PHYSICS 1A03, PHYSICS 1AA3, MATH 1A03, MATH 1AA3, CHEM 1A03, BIOLOGY 1A03"></textarea>
+      <label for="requirement-set">Requirement set</label>
+      <select id="requirement-set">
+        {% for key in grouped.keys() %}
+          <option value="{{ key }}" {% if key == "level-ii-admission" %}selected{% endif %}>{{ key|replace("-", " ")|title }}</option>
+        {% endfor %}
+      </select>
+      <div class="form-actions">
+        <button class="button primary" type="submit">Check courses</button>
+      </div>
+      <p class="form-note">This tool intentionally does not replace MAP, the Academic Calendar, or academic advising.</p>
+    </form>
+    <aside class="result-panel wide">
+      <span>Checklist rules</span>
+      <div id="requirements-result">
+        {% for key, rules in grouped.items() %}
+          {% if key == "level-ii-admission" %}
+            {% for rule in rules %}
+              <div class="status-row pending">
+                <strong>{{ rule.label }}</strong>
+                <p>{{ rule.description }}</p>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

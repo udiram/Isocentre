@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Admin Reviews | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Admin</p>
+  <h1>Course reviews</h1>
+  <p>Private emails are visible here for security/accountability. Do not expose them publicly.</p>
+</section>
+<form class="filter-bar" method="get">
+  <label>Status
+    <select name="status">
+      {% for item in ["pending", "awaiting_verification", "approved", "rejected", "hidden", "all"] %}
+        <option value="{{ item }}" {% if status == item %}selected{% endif %}>{{ item.replace("_", " ") }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Search
+    <input name="q" value="{{ query }}" placeholder="course, email, advice">
+  </label>
+  <button class="button secondary" type="submit">Filter</button>
+</form>
+<section class="admin-list">
+  {% for review in reviews %}
+    <article class="review-card">
+      <div class="rating-row"><small>{{ review.status }}</small><small>{{ review.course.code }}</small><small>{{ review.email_private }}</small><small>{{ review.term_taken }}</small></div>
+      <p>{{ review.advice }}</p>
+      <form class="inline-actions" method="post" action="{{ url_for('main.admin_moderate', target_type='CourseReview', target_id=review.id, action='approve') }}"><button class="button primary">Approve</button></form>
+      <form class="inline-actions" method="post" action="{{ url_for('main.admin_moderate', target_type='CourseReview', target_id=review.id, action='reject') }}"><button class="button secondary">Reject</button></form>
+      <form class="inline-actions" method="post" action="{{ url_for('main.admin_moderate', target_type='CourseReview', target_id=review.id, action='hide') }}"><button class="button secondary">Hide</button></form>
+    </article>
+  {% else %}<p>No reviews.</p>{% endfor %}
+  {% if pagination and pagination.pages > 1 %}
+    <nav class="pagination" aria-label="Admin review pages">
+      {% if pagination.has_prev %}<a href="{{ url_for('main.admin_reviews', status=status, q=query, page=pagination.prev_num) }}">Previous</a>{% endif %}
+      <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.has_next %}<a href="{{ url_for('main.admin_reviews', status=status, q=query, page=pagination.next_num) }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

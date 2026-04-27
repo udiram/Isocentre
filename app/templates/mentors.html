@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Mentor Directory | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Opt-in directory</p>
+  <h1>Find students and alumni by pathway, experience, and contact preference.</h1>
+  <p>Profiles are public only after McMaster email verification and moderation.</p>
+  <div class="cta-row">
+    <a class="button primary" href="{{ url_for('main.submit_mentor') }}">Add profile</a>
+    <a class="button secondary" href="{{ url_for('main.community') }}">Community hub</a>
+  </div>
+</section>
+
+<form class="filter-bar" method="get">
+  <label>Search
+    <input name="q" value="{{ query }}" placeholder="imaging, CAMPEP, co-op, thesis">
+  </label>
+  <label>Tag
+    <input name="tag" value="{{ tag }}" placeholder="clinical medical physics">
+  </label>
+  <button class="button secondary" type="submit">Filter</button>
+  <a class="button ghost" href="{{ url_for('main.mentors') }}">Reset</a>
+</form>
+
+<section class="card-section">
+  <div class="card-grid">
+    {% for mentor in mentors %}
+      <article class="guide-card">
+        <span>{{ mentor.role_year }}</span>
+        <h3>{{ mentor.display_name }}</h3>
+        <p>{{ mentor.bio }}</p>
+        <p><strong>Pathways:</strong> {{ mentor.pathway_tags|tags }}</p>
+        <p><strong>Experience:</strong> {{ mentor.experience_tags|tags }}</p>
+        <p><strong>Contact:</strong> {{ mentor.public_contact_text or mentor.contact_preference }}</p>
+        {% if mentor.user_id and (not current_user or current_user.id != mentor.user_id) %}
+          <a class="button secondary" href="{{ url_for('main.message_mentor', mentor_id=mentor.id) }}">Message mentor</a>
+        {% endif %}
+      </article>
+    {% else %}
+      <p>No approved mentor profiles yet.</p>
+    {% endfor %}
+  </div>
+  {% if pagination and pagination.pages > 1 %}
+    <nav class="pagination" aria-label="Mentor pages">
+      {% if pagination.has_prev %}<a href="{{ url_for('main.mentors', q=query, tag=tag, page=pagination.prev_num) }}">Previous</a>{% endif %}
+      <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.has_next %}<a href="{{ url_for('main.mentors', q=query, tag=tag, page=pagination.next_num) }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Admin Questions | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Admin</p>
+  <h1>Ask an upper-year queue</h1>
+</section>
+<form class="filter-bar" method="get">
+  <label>Status
+    <select name="status">
+      {% for item in ["pending", "awaiting_verification", "approved", "rejected", "hidden", "all"] %}
+        <option value="{{ item }}" {% if status == item %}selected{% endif %}>{{ item.replace("_", " ") }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Search
+    <input name="q" value="{{ query }}" placeholder="topic, email, body">
+  </label>
+  <button class="button secondary" type="submit">Filter</button>
+</form>
+<section class="admin-list">
+  {% for question in questions %}
+    <article class="review-card">
+      <div class="rating-row"><small>{{ question.status }}</small><small>{{ question.private_email }}</small><small>{{ question.stage }}</small></div>
+      <h3>{{ question.topic }}</h3>
+      <p>{{ question.body }}</p>
+      {% for action,label in [("approve","Mark handled"),("reject","Reject"),("hide","Hide")] %}
+        <form class="inline-actions" method="post" action="{{ url_for('main.admin_moderate', target_type='QuestionSubmission', target_id=question.id, action=action) }}"><button class="button {{ 'primary' if action == 'approve' else 'secondary' }}">{{ label }}</button></form>
+      {% endfor %}
+    </article>
+  {% else %}<p>No questions.</p>{% endfor %}
+  {% if pagination and pagination.pages > 1 %}
+    <nav class="pagination" aria-label="Admin question pages">
+      {% if pagination.has_prev %}<a href="{{ url_for('main.admin_questions', status=status, q=query, page=pagination.prev_num) }}">Previous</a>{% endif %}
+      <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.has_next %}<a href="{{ url_for('main.admin_questions', status=status, q=query, page=pagination.next_num) }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

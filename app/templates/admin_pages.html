@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Admin Content | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Admin</p>
+  <h1>Content coverage</h1>
+  <p>{{ pages|length }} guide pages and {{ courses|length }} course guides are seeded.</p>
+</section>
+<section class="resource-list">
+  <div class="resource-group">
+    <h2>Pages</h2>
+    {% for page in pages %}
+      <a class="resource-row" href="{{ url_for('main.page', slug=page.slug) }}"><span><strong>{{ page.title }}</strong><small>{{ page.section }} · {{ page.source_confidence }}</small></span><em>View</em></a>
+    {% endfor %}
+  </div>
+  <div class="resource-group">
+    <h2>Courses</h2>
+    {% for course in courses %}
+      <a class="resource-row" href="{{ url_for('main.course_detail', code=course.code) }}"><span><strong>{{ course.code }} — {{ course.title }}</strong><small>Level {{ course.level }} · {{ course.requirement_roles|tags }}</small></span><em>View</em></a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

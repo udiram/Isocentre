@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Join Mentor Directory | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell">
+  <div class="tool-header">
+    <p class="eyebrow">Networking</p>
+    <h1>Add an opt-in mentor profile</h1>
+    <p>Your account owns this profile. Students can message you through Isocentre without your private email being public.</p>
+  </div>
+  <form class="tool-panel narrow" method="post">
+    <div class="submission-identity">
+      <strong>Submitting as {{ current_user.display_name }}</strong>
+      <span>{{ current_user.email }} stays private. New mentee messages appear in your inbox.</span>
+    </div>
+    <label>Display name <input required name="display_name" placeholder="First name, initials, or alias"></label>
+    <label>Role/year <input required name="role_year" placeholder="Level III MedBioPhys, alum, MSc student..."></label>
+    <label>Pathway tags <input name="pathway_tags" placeholder="medical physics, imaging AI, co-op, health physics"></label>
+    <label>Experience tags <input name="experience_tags" placeholder="research, co-op, CAMPEP apps, thesis"></label>
+    <label>Bio <textarea required name="bio" rows="6" placeholder="What can students ask you about?"></textarea></label>
+    <label>Contact preference <input name="contact_preference" placeholder="Email, LinkedIn, Discord, ask through form..."></label>
+    <label>Public contact text <input name="public_contact_text" placeholder="Only include what you want visible publicly"></label>
+    <label>Available for mentorship?
+      <select name="mentorship_available"><option value="yes">Yes</option><option value="no">Not right now</option></select>
+    </label>
+    <button class="button primary" type="submit">Submit for moderation</button>
+  </form>
+</section>
+{% endblock %}

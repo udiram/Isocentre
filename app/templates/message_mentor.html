@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Message {{ mentor.display_name }} | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell">
+  <div class="tool-header">
+    <p class="eyebrow">Mentor message</p>
+    <h1>Message {{ mentor.display_name }}.</h1>
+    <p>{{ mentor.role_year }} · {{ mentor.pathway_tags|tags }}</p>
+  </div>
+  <form class="tool-panel narrow" method="post">
+    <div class="submission-identity">
+      <strong>Sending as {{ current_user.display_name }}</strong>
+      <span>The message stays inside Isocentre. The mentor will get an inbox notification.</span>
+    </div>
+    <label>Subject
+      <input name="subject" required maxlength="180" placeholder="Question about Level II research / co-op / CAMPEP">
+    </label>
+    <label>Message
+      <textarea name="body" required rows="8" placeholder="Be specific: your stage, what you are deciding, and what kind of advice would help."></textarea>
+    </label>
+    <p class="form-note">Keep it respectful and practical. Do not ask for private course materials or assignment help.</p>
+    <button class="button primary" type="submit">Send message</button>
+  </form>
+</section>
+{% endblock %}

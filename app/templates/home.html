@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Isocentre | Unofficial McMaster MedBioPhys Hub{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Unofficial McMaster Medical & Biological Physics Hub</p>
+    <h1>Start here if medical physics at McMaster sounds right, but the path still feels blurry.</h1>
+    <p class="lede">Isocentre translates official requirements into plain-English planning, survival strategy, research direction, and career roadmaps.</p>
+    <div class="cta-row">
+      <a class="button primary" href="{{ url_for('main.guide_map') }}">Start roadmap</a>
+      {% if current_user %}
+        <a class="button secondary" href="{{ url_for('main.dashboard') }}">Go to dashboard</a>
+      {% else %}
+        <a class="button secondary" href="{{ url_for('main.register') }}">Create dashboard</a>
+      {% endif %}
+    </div>
+  </div>
+  <aside class="hero-panel" aria-label="Start by stage">
+    <h2>Choose your stage</h2>
+    <div class="stage-grid">
+      <a href="{{ url_for('main.page', slug='medbiophys-vs-mrsc') }}"><span>Prospective</span><small>Compare programs</small></a>
+      <a href="{{ url_for('main.page', slug='level-ii-admission-guide') }}"><span>Level I</span><small>Plan admission</small></a>
+      <a href="{{ url_for('main.page', slug='level-ii-survival-guide') }}"><span>Level II</span><small>Survive the load</small></a>
+      <a href="{{ url_for('main.page', slug='research-guide') }}"><span>Upper-year</span><small>Find research</small></a>
+      <a href="{{ url_for('main.page', slug='grad-school-campep-guide') }}"><span>Graduating</span><small>Map next steps</small></a>
+    </div>
+  </aside>
+</section>
+
+<section class="quick-flow">
+  <a href="{{ url_for('main.guide_map') }}"><span>1</span><strong>Follow the roadmap</strong><small>Semester-by-semester actions</small></a>
+  <a href="{{ url_for('main.courses') }}"><span>2</span><strong>Understand courses</strong><small>Official role plus survival advice</small></a>
+  <a href="{{ url_for('main.program_tool') }}"><span>3</span><strong>Check progress</strong><small>Level II-IV and track planning</small></a>
+  <a href="{{ url_for('main.community') }}"><span>4</span><strong>Find people</strong><small>Reviews, mentors, questions</small></a>
+</section>
+
+<section class="card-section">
+  <div class="section-heading">
+    <p class="eyebrow">Choose a direction</p>
+    <h2>Jump into the guide that matches the question you are actually asking.</h2>
+  </div>
+  <div class="card-grid">
+    <a class="guide-card" href="{{ url_for('main.page', slug='clinical-medical-physics-roadmap') }}">
+      <span>Clinical</span>
+      <h3>Become a medical physicist</h3>
+      <p>Undergrad preparation, CAMPEP, residency, CCPM, and what to build each year.</p>
+    </a>
+    <a class="guide-card" href="{{ url_for('main.page', slug='nserc-usra-and-summer-research') }}">
+      <span>Research</span>
+      <h3>Find summer research</h3>
+      <p>Supervisor outreach, NSERC USRA, project fit, and what makes an application strong.</p>
+    </a>
+    <a class="guide-card" href="{{ url_for('main.page', slug='medical-imaging-ai-portfolio') }}">
+      <span>Portfolio</span>
+      <h3>Build imaging/data proof</h3>
+      <p>Python, image processing, validation, and portfolio projects for research or co-op.</p>
+    </a>
+  </div>
+</section>
+
+<section class="notice-band">
+  <strong>Important distinction:</strong>
+  <span>MedBioPhys is a Physics & Astronomy degree. MRSc is a separate McMaster-Mohawk clinical program for radiography, ultrasonography, or radiation therapy.</span>
+  <a href="{{ url_for('main.page', slug='medbiophys-vs-mrsc') }}">Compare them</a>
+</section>
+
+<section class="section-grid">
+  <div class="section-heading">
+    <p class="eyebrow">Program map</p>
+    <h2>Level I to career direction</h2>
+  </div>
+  <div class="timeline">
+    <article>
+      <span>01</span>
+      <h3>Level I</h3>
+      <p>Choose a gateway and protect math, physics, chemistry, and biology requirements.</p>
+    </article>
+    <article>
+      <span>02</span>
+      <h3>Level II</h3>
+      <p>Build the core: E&M, modern physics, computing, labs, differential equations, and calculus.</p>
+    </article>
+    <article>
+      <span>03</span>
+      <h3>Upper years</h3>
+      <p>Choose a direction: clinical medical physics, health physics, biophysics, imaging AI, or industry.</p>
+    </article>
+    <article>
+      <span>04</span>
+      <h3>After Mac</h3>
+      <p>Graduate school, CAMPEP, residency, co-op conversion, research, nuclear, data, or adjacent healthcare paths.</p>
+    </article>
+  </div>
+</section>
+
+<section class="content-split">
+  <div>
+    <p class="eyebrow">Top 5</p>
+    <h2>Things students should know earlier</h2>
+    <ol class="wish-list">
+      <li>The program is genuinely physics-heavy.</li>
+      <li>MRSc and MedBioPhys are not interchangeable.</li>
+      <li>Research experience can change your entire path.</li>
+      <li>Python and data skills compound quickly.</li>
+      <li>Clinical medical physics requires graduate training after undergrad.</li>
+    </ol>
+  </div>
+  <div class="tool-stack">
+    <a class="tool-card" href="{{ url_for('main.gpa_tool') }}">
+      <strong>GPA calculator</strong>
+      <span>McMaster 12-point scale with weighted units.</span>
+    </a>
+    <a class="tool-card" href="{{ url_for('main.requirements_tool') }}">
+      <strong>Requirement checklist</strong>
+      <span>Flags complete, missing, and advisor-check items.</span>
+    </a>
+    <a class="tool-card" href="{{ url_for('main.program_tool') }}">
+      <strong>Program checker</strong>
+      <span>Level II-IV requirements and Course List A/B/C track progress.</span>
+    </a>
+    <a class="tool-card" href="{{ url_for('main.cold_email_tool') }}">
+      <strong>Cold email generator</strong>
+      <span>Draft outreach for research, co-op, or grad school.</span>
+    </a>
+  </div>
+</section>
+
+<section class="card-section">
+  <div class="section-heading">
+    <p class="eyebrow">Featured guides</p>
+    <h2>High-impact starting points</h2>
+  </div>
+  <div class="card-grid">
+    {% for page in featured_pages %}
+      <a class="guide-card" href="{{ url_for('main.page', slug=page.slug) }}">
+        <span>{{ page.section }}</span>
+        <h3>{{ page.title }}</h3>
+        <p>{{ page.summary }}</p>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card-section">
+  <div class="section-heading">
+    <p class="eyebrow">Community</p>
+    <h2>Find course intel and people who have done the path.</h2>
+  </div>
+  <div class="card-grid">
+    <a class="guide-card" href="{{ url_for('main.community') }}">
+      <span>Reviews</span>
+      <h3>Moderated course reviews</h3>
+      <p>Student-reported difficulty, workload, usefulness, and survival advice, separated from official facts.</p>
+    </a>
+    <a class="guide-card" href="{{ url_for('main.mentors') }}">
+      <span>Networking</span>
+      <h3>Opt-in mentor directory</h3>
+      <p>Students and alumni can list interests, experience, and contact preferences after McMaster email verification.</p>
+    </a>
+    <a class="guide-card" href="{{ url_for('main.ask_upper_year') }}">
+      <span>Ask</span>
+      <h3>Ask an upper-year</h3>
+      <p>Submit questions for moderated follow-up and future guide improvements.</p>
+    </a>
+  </div>
+</section>
+
+<section class="card-section muted">
+  <div class="section-heading">
+    <p class="eyebrow">Course survival</p>
+    <h2>Level II pressure points</h2>
+  </div>
+  <div class="course-strip">
+    {% for course in courses %}
+      <a href="{{ url_for('main.course_detail', code=course.code) }}">
+        <strong>{{ course.code }}</strong>
+        <span>{{ course.title }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

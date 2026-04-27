@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Isocentre is an unofficial McMaster Medical & Biological Physics student guide.">
+    <title>{% block title %}Isocentre{% endblock %}</title>
+    <script>
+      (() => {
+        const theme = localStorage.getItem("isocentre-theme");
+        if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav-shell" aria-label="Main navigation">
+        <a class="brand" href="{{ url_for('main.home') }}" aria-label="Isocentre home">
+          <span class="brand-mark">I</span>
+          <span>
+            <strong>Isocentre</strong>
+            <small>Unofficial MedBioPhys guide</small>
+          </span>
+        </a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+        <div class="nav-links" id="site-menu">
+          <a href="{{ url_for('main.guide_map') }}">Roadmap</a>
+          <a href="{{ url_for('main.courses') }}">Courses</a>
+          <a href="{{ url_for('main.program_tool') }}">Planner Tools</a>
+          <a href="{{ url_for('main.community') }}">Community</a>
+          <a href="{{ url_for('main.resources') }}">Sources</a>
+        </div>
+        <form class="nav-search" action="{{ url_for('main.search') }}" role="search">
+          <label class="sr-only" for="site-search">Search Isocentre</label>
+          <input id="site-search" name="q" type="search" placeholder="Search courses, guides, careers" value="{{ request.args.get('q', '') }}">
+        </form>
+        <div class="nav-actions">
+          <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">◐</button>
+          {% if current_user %}
+            <a class="notification-link" href="{{ url_for('main.notifications') }}" aria-label="{{ unread_notifications }} unread notifications">
+              Inbox
+              {% if unread_notifications %}
+                <span>{{ unread_notifications }}</span>
+              {% endif %}
+            </a>
+            <a class="account-link" href="{{ url_for('main.dashboard') }}">{{ current_user.display_name }}</a>
+          {% else %}
+            <a class="account-link" href="{{ url_for('main.login') }}">Sign in</a>
+          {% endif %}
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-stack" role="status">
+            {% for category, message in messages %}
+              <p class="flash {{ category }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong>Isocentre</strong>
+        <p>Unofficial, student-facing interpretation for McMaster Medical & Biological Physics. Always confirm requirements with official McMaster sources.</p>
+      </div>
+      <div class="footer-links">
+        <a href="{{ url_for('main.guide_map') }}">Roadmap</a>
+        <a href="{{ url_for('main.search') }}">Search</a>
+        <a href="{{ url_for('main.resources') }}">Official links</a>
+        <a href="{{ url_for('main.page', slug='medbiophys-vs-mrsc') }}">MedBioPhys vs MRSc</a>
+        {% if current_user %}
+          <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('main.notifications') }}">Notifications</a>
+          <a href="{{ url_for('main.messages') }}">Messages</a>
+        {% else %}
+          <a href="{{ url_for('main.register') }}">Create account</a>
+        {% endif %}
+      </div>
+    </footer>
+    <script src="{{ url_for('static', filename='js/tools.js') }}" defer></script>
+  </body>
+</html>

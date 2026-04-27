@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Community | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Community</p>
+  <h1>Course reviews, mentor profiles, and upper-year questions.</h1>
+  <p>Public posts are moderated. Signed-in students get updates, mentor messages, and review activity through Isocentre notifications.</p>
+  <div class="cta-row">
+    <a class="button primary" href="{{ url_for('main.submit_review') }}">Submit course review</a>
+    <a class="button secondary" href="{{ url_for('main.submit_mentor') }}">Join mentor directory</a>
+    <a class="button secondary" href="{{ url_for('main.ask_upper_year') }}">Ask an upper-year</a>
+  </div>
+</section>
+
+<section class="quick-flow" aria-label="Community workflow">
+  <a href="{{ url_for('main.mentors') }}"><span>01</span><strong>Find people</strong><small>Filter mentors by pathway or experience</small></a>
+  <a href="{{ url_for('main.submit_review') }}"><span>02</span><strong>Leave course intel</strong><small>Difficulty, workload, usefulness, and advice</small></a>
+  <a href="{{ url_for('main.ask_upper_year') }}"><span>03</span><strong>Ask a question</strong><small>Private queue first, public only after moderation</small></a>
+  <a href="{{ url_for('main.page', slug='course-review-guidelines') }}"><span>04</span><strong>Moderation rules</strong><small>No private materials, no personal attacks</small></a>
+</section>
+
+<section class="card-section">
+  <div class="section-heading">
+    <p class="eyebrow">Networking</p>
+    <h2>Opt-in mentor directory</h2>
+  </div>
+  <div class="card-grid">
+    {% for mentor in mentors %}
+      <article class="guide-card">
+        <span>{{ mentor.role_year }}</span>
+        <h3>{{ mentor.display_name }}</h3>
+        <p>{{ mentor.bio }}</p>
+        <p class="mini-tags">{{ mentor.pathway_tags|tags }}</p>
+        {% if mentor.public_contact_text %}<p><strong>Contact:</strong> {{ mentor.public_contact_text }}</p>{% endif %}
+      </article>
+    {% else %}
+      <article class="guide-card">
+        <span>Start here</span>
+        <h3>No approved mentor profiles yet</h3>
+        <p>Be the first opt-in profile, or use Ask an Upper-Year to seed questions that can become future guide updates.</p>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card-section muted">
+  <div class="section-heading">
+    <p class="eyebrow">Reviews</p>
+    <h2>Recent course intel</h2>
+  </div>
+  <div class="card-grid">
+    {% for review in recent_reviews %}
+      <a class="guide-card" href="{{ url_for('main.course_reviews', code=review.course.code) }}">
+        <span>{{ review.course.code }} · {{ review.term_taken }}</span>
+        <h3>{{ review.course.title }}</h3>
+        <p>{{ review.advice }}</p>
+      </a>
+    {% else %}
+      <article class="guide-card">
+        <span>Course intel</span>
+        <h3>No approved reviews yet</h3>
+        <p>Submit a practical review about workload, preparation, and study strategy. Reviews stay private until verified and moderated.</p>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

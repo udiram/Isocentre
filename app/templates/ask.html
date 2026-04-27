@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Ask an Upper-Year | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell">
+  <div class="tool-header">
+    <p class="eyebrow">Ask</p>
+    <h1>Ask an upper-year</h1>
+    <p>Questions are tied to your signed-in account, private by default, and may be used to improve future guide pages after moderation.</p>
+  </div>
+  <form class="tool-panel narrow" method="post" action="{{ url_for('main.submit_question') }}">
+    {% if current_user %}
+      <div class="submission-identity">
+        <strong>Asking as {{ current_user.display_name }}</strong>
+        <span>Updates appear in your Isocentre notifications.</span>
+      </div>
+    {% else %}
+      <div class="submission-identity">
+        <strong>Sign in required</strong>
+        <span>Create an account so replies and moderation updates can stay inside Isocentre.</span>
+      </div>
+    {% endif %}
+    <label>Stage
+      <select name="stage">
+        <option>Prospective</option><option>Level I</option><option>Level II</option><option>Upper-year</option><option>Graduating</option>
+      </select>
+    </label>
+    <label>Topic <input required name="topic" placeholder="Course planning, research, co-op, grad school..."></label>
+    <label>Question <textarea required name="body" rows="8"></textarea></label>
+    <button class="button primary" type="submit">Submit question</button>
+  </form>
+</section>
+{% endblock %}

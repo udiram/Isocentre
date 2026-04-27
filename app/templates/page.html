@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }} | Isocentre{% endblock %}
+{% block content %}
+<article class="article-shell">
+  <header class="article-header">
+    <p class="eyebrow">{{ page.section }}</p>
+    <h1>{{ page.title }}</h1>
+    <p>{{ page.summary }}</p>
+  </header>
+
+  <div class="article-layout">
+    <div class="article-body">
+      {{ body_html|safe }}
+    </div>
+    <aside class="article-aside">
+      <div class="aside-box warning">
+        <strong>Unofficial guide</strong>
+        <p>This page translates official information into student-facing advice. Confirm degree requirements with McMaster sources.</p>
+      </div>
+      <div class="aside-box">
+        <strong>Save this guide</strong>
+        {% if current_user %}
+          <form method="post" action="{{ url_for('main.save_guide', slug=page.slug) }}">
+            <button class="button secondary full" type="submit">Save to dashboard</button>
+          </form>
+        {% else %}
+          <p>Create an account to bookmark guides and courses.</p>
+          <a href="{{ url_for('main.login') }}">Sign in</a>
+        {% endif %}
+      </div>
+      {% if page.source_links %}
+        <div class="aside-box">
+          <strong>Sources</strong>
+          {% for link in page.source_links %}
+            <a href="{{ link.url }}" target="_blank" rel="noreferrer">{{ link.label }}</a>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% if related %}
+        <div class="aside-box">
+          <strong>Related</strong>
+          {% for item in related %}
+            <a href="{{ url_for('main.page', slug=item.slug) }}">{{ item.title }}</a>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </aside>
+  </div>
+</article>
+{% endblock %}

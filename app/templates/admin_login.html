@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Admin Login | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell">
+  <div class="tool-header">
+    <p class="eyebrow">Admin</p>
+    <h1>Moderation login</h1>
+    <p>Use the `ADMIN_PASSWORD` environment variable.</p>
+  </div>
+  <form class="tool-panel narrow" method="post">
+    <label>Password <input required type="password" name="password"></label>
+    <button class="button primary" type="submit">Log in</button>
+  </form>
+</section>
+{% endblock %}

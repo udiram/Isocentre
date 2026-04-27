@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Planner | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell">
+  <header class="tool-header">
+    <p class="eyebrow">Personal planner</p>
+    <h1>Save completed, planned, and interesting courses.</h1>
+    <p>The dashboard uses completed courses for the requirement pulse and planned courses as your working roadmap.</p>
+  </header>
+
+  <div class="tool-layout">
+    <form class="tool-panel" method="post">
+      <label>Course
+        <select name="course_code">
+          {% for course in courses %}
+            <option value="{{ course.code }}">{{ course.code }} — {{ course.title }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div class="field-grid">
+        <label>Status
+          <select name="status">
+            {% for status in statuses %}
+              <option value="{{ status }}">{{ status }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Term
+          <input name="term_label" placeholder="Fall 2026">
+        </label>
+      </div>
+      <label>Private note
+        <textarea name="note" rows="3" placeholder="Why this course matters, prereq concern, review later..."></textarea>
+      </label>
+      <button class="button primary" type="submit">Save course</button>
+    </form>
+
+    <aside class="result-panel wide">
+      <span>Planner tips</span>
+      <p>Mark courses as completed only when you want them counted in the dashboard requirement pulse.</p>
+      <p>Use planned for future terms and interested for electives you are still comparing.</p>
+      <a class="button secondary" href="{{ url_for('main.program_tool') }}">Run full program checker</a>
+    </aside>
+  </div>
+</section>
+
+<section class="review-list">
+  {% for item in saved %}
+    <article class="review-card planner-item">
+      <div>
+        <div class="rating-row"><small>{{ item.status }}</small>{% if item.term_label and item.term_label != "None" %}<small>{{ item.term_label }}</small>{% endif %}</div>
+        <h3><a href="{{ url_for('main.course_detail', code=item.course.code) }}">{{ item.course.code }} — {{ item.course.title }}</a></h3>
+        {% if item.note %}<p>{{ item.note }}</p>{% endif %}
+      </div>
+      <form method="post" action="{{ url_for('main.remove_planner_item', item_id=item.id) }}">
+        <button class="button secondary" type="submit">Remove</button>
+      </form>
+    </article>
+  {% else %}
+    <p>No courses saved yet.</p>
+  {% endfor %}
+</section>
+{% endblock %}

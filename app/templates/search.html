@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Search | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Search</p>
+  <h1>Find the guide, course, resource, or person you need.</h1>
+  <form class="hero-search" action="{{ url_for('main.search') }}">
+    <label class="sr-only" for="search-page-input">Search Isocentre</label>
+    <input id="search-page-input" name="q" type="search" value="{{ query }}" placeholder="Try PHYSICS 2G03, CAMPEP, co-op, MRSc">
+    <button class="button primary" type="submit">Search</button>
+  </form>
+</section>
+
+{% if query %}
+  <section class="search-results">
+    <div class="map-group">
+      <h2>Guides</h2>
+      {% for page in pages %}
+        <a class="compact-link" href="{{ url_for('main.page', slug=page.slug) }}"><strong>{{ page.title }}</strong><small>{{ page.summary }}</small></a>
+      {% else %}<p>No guide matches.</p>{% endfor %}
+    </div>
+    <div class="map-group">
+      <h2>Courses</h2>
+      {% for course in courses %}
+        <a class="compact-link" href="{{ url_for('main.course_detail', code=course.code) }}"><strong>{{ course.code }} — {{ course.title }}</strong><small>{{ course.description }}</small></a>
+      {% else %}<p>No course matches.</p>{% endfor %}
+    </div>
+    <div class="map-group">
+      <h2>Resources</h2>
+      {% for resource in resources %}
+        <a class="compact-link" href="{{ resource.url }}" target="_blank" rel="noreferrer"><strong>{{ resource.title }}</strong><small>{{ resource.description }}</small></a>
+      {% else %}<p>No resource matches.</p>{% endfor %}
+    </div>
+    <div class="map-group">
+      <h2>Mentors</h2>
+      {% for mentor in mentors %}
+        <a class="compact-link" href="{{ url_for('main.mentors', q=query) }}"><strong>{{ mentor.display_name }}</strong><small>{{ mentor.role_year }} · {{ mentor.pathway_tags|tags }}</small></a>
+      {% else %}<p>No approved mentor matches.</p>{% endfor %}
+    </div>
+  </section>
+{% else %}
+  <section class="card-section">
+    <div class="card-grid">
+      <a class="guide-card" href="{{ url_for('main.courses') }}"><span>Course</span><h3>Browse all courses</h3><p>Filter by level, track, or course code.</p></a>
+      <a class="guide-card" href="{{ url_for('main.guide_map') }}"><span>Roadmap</span><h3>Use the roadmap</h3><p>Follow a logical flow by stage and semester.</p></a>
+      <a class="guide-card" href="{{ url_for('main.community') }}"><span>Community</span><h3>Find student-reported intel</h3><p>Reviews, mentors, and ask-an-upper-year.</p></a>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

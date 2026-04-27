@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}GPA Calculator | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell" data-tool="gpa">
+  <div class="tool-header">
+    <p class="eyebrow">Tool</p>
+    <h1>McMaster 12-point GPA calculator</h1>
+    <p>Enter courses, units, and 12-point grades. This is an unofficial estimator, not an academic record.</p>
+  </div>
+
+  <div class="tool-layout">
+    <form class="tool-panel" id="gpa-form">
+      <div class="table-like" id="gpa-rows" aria-label="GPA course rows"></div>
+      <div class="form-actions">
+        <button class="button secondary" type="button" id="add-gpa-row">Add course</button>
+        <button class="button primary" type="submit">Calculate</button>
+      </div>
+    </form>
+    <aside class="result-panel" id="gpa-result" aria-live="polite">
+      <span>Result</span>
+      <strong>--</strong>
+      <p>Add at least one course with units greater than zero.</p>
+    </aside>
+  </div>
+</section>
+{% endblock %}

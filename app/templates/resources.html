@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Resources | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Official links and templates</p>
+  <h1>Use official sources for requirements, then use Isocentre to interpret the path.</h1>
+  <p>Requirements, accreditation, admissions, and credentials can change. These links are the first stop for policy-level decisions.</p>
+</section>
+
+<section class="resource-list">
+  {% for category, links in grouped.items() %}
+    <div class="resource-group">
+      <h2>{{ category }}</h2>
+      {% for link in links %}
+        <a class="resource-row" href="{{ link.url }}" {% if link.url.startswith('http') %}target="_blank" rel="noreferrer"{% endif %}>
+          <span>
+            <strong>{{ link.title }}</strong>
+            <small>{{ link.description }}</small>
+          </span>
+          <em>{{ "Official" if link.is_official else "Isocentre" }}</em>
+        </a>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Cold Email Generator | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell" data-tool="cold-email">
+  <div class="tool-header">
+    <p class="eyebrow">Tool</p>
+    <h1>Cold email generator</h1>
+    <p>Draft outreach for research supervisors, co-op networking, or graduate school. Edit the result until it sounds like you.</p>
+  </div>
+
+  <div class="tool-layout">
+    <form class="tool-panel" id="email-form">
+      <div class="field-grid">
+        <label>Purpose
+          <select name="purpose">
+            <option value="research">Research</option>
+            <option value="coop">Co-op</option>
+            <option value="grad">Grad school</option>
+          </select>
+        </label>
+        <label>Tone
+          <select name="tone">
+            <option value="direct">Direct</option>
+            <option value="warm">Warm</option>
+          </select>
+        </label>
+        <label>Your name
+          <input name="name" placeholder="Your Name">
+        </label>
+        <label>Recipient
+          <input name="recipient" placeholder="Professor Lastname">
+        </label>
+      </div>
+      <label>Interests
+        <input name="interests" placeholder="medical imaging, radiation physics, computational biophysics">
+      </label>
+      <label>Relevant background
+        <textarea name="experience" rows="4" placeholder="PHYSICS 2G03, Python projects, lab work, image analysis, NSERC application plan"></textarea>
+      </label>
+      <label>Ask
+        <input name="ask" placeholder="a short meeting to discuss possible undergraduate research fit">
+      </label>
+      <div class="form-actions">
+        <button class="button primary" type="submit">Generate draft</button>
+      </div>
+    </form>
+    <aside class="result-panel email-output">
+      <span>Draft</span>
+      <pre id="email-result">Fill out the form to generate a draft.</pre>
+    </aside>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Isocentre{% endblock %}
+{% block content %}
+<section class="dashboard-hero">
+  <div>
+    <p class="eyebrow">{{ user.stage }} dashboard</p>
+    <h1>{{ user.display_name }}, here is the next useful thing.</h1>
+    <p>{{ user.goal or "Save courses and guides to turn Isocentre into a working plan instead of a pile of tabs." }}</p>
+    <div class="cta-row">
+      <a class="button primary" href="{{ url_for('main.planner') }}">Open planner</a>
+      <a class="button secondary" href="{{ url_for('main.guide_map') }}">Use roadmap</a>
+      <a class="button secondary" href="{{ url_for('main.notifications') }}">Notifications</a>
+      <a class="button secondary" href="{{ url_for('main.account_settings') }}">Edit profile</a>
+    </div>
+  </div>
+  <aside class="dashboard-card">
+    <span>Stage flow</span>
+    {% for title, slug in stage_flow %}
+      <a href="{{ url_for('main.page', slug=slug) }}">{{ loop.index }}. {{ title }}</a>
+    {% endfor %}
+  </aside>
+</section>
+
+<section class="dashboard-grid">
+  <article class="dashboard-card">
+    <span>Saved courses</span>
+    <h2>{{ saved_courses|length }} courses in your planner</h2>
+    {% for item in saved_courses[:6] %}
+      <div class="compact-row">
+        <strong>{{ item.course.code }}</strong>
+        <small>{{ item.status }}{% if item.term_label and item.term_label != "None" %} · {{ item.term_label }}{% endif %}</small>
+      </div>
+    {% else %}
+      <p>No saved courses yet. Start with the recommended courses below.</p>
+    {% endfor %}
+    <a class="text-link" href="{{ url_for('main.planner') }}">Manage planner</a>
+  </article>
+
+  <article class="dashboard-card">
+    <span>Recommended next reads</span>
+    {% for page in recommended_pages %}
+      <a class="compact-link" href="{{ url_for('main.page', slug=page.slug) }}">
+        <strong>{{ page.title }}</strong>
+        <small>{{ page.summary }}</small>
+      </a>
+    {% endfor %}
+  </article>
+
+  <article class="dashboard-card">
+    <span>Suggested courses</span>
+    {% for course in next_courses %}
+      <form class="compact-row save-row" method="post" action="{{ url_for('main.save_course', code=course.code) }}">
+        <div>
+          <strong><a href="{{ url_for('main.course_detail', code=course.code) }}">{{ course.code }}</a></strong>
+          <small>{{ course.title }}</small>
+        </div>
+        <input type="hidden" name="status" value="planned">
+        <button class="button mini" type="submit">Save</button>
+      </form>
+    {% endfor %}
+  </article>
+</section>
+
+<section class="card-section">
+  <div class="section-heading">
+    <p class="eyebrow">Requirement pulse</p>
+    <h2>What your completed planner courses currently satisfy</h2>
+  </div>
+  <div class="status-board">
+    {% for group, items in program_groups.items() %}
+      <div class="status-group">
+        <h3>{{ group|labelize }}</h3>
+        {% for item in items[:4] %}
+          <div class="status-row {{ item.status }}">
+            <span class="status-pill">{{ item.status.replace("-", " ") }}</span>
+            <strong>{{ item.label }}</strong>
+            <p>{{ item.matched_units }}/{{ item.required_units }} units matched</p>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card-section muted">
+  <div class="section-heading">
+    <p class="eyebrow">Saved guides</p>
+    <h2>Bookmarks</h2>
+  </div>
+  <div class="card-grid">
+    {% for item in saved_guides %}
+      <a class="guide-card" href="{{ url_for('main.page', slug=item.page.slug) }}">
+        <span>{{ item.page.section }}</span>
+        <h3>{{ item.page.title }}</h3>
+        <p>{{ item.page.summary }}</p>
+      </a>
+    {% else %}
+      <p>Save any guide from its sidebar and it will show up here.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

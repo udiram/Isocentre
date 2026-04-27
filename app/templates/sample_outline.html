@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Sample Course Outline | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Sample outline</p>
+  <h1>{{ outline.title }}</h1>
+  <p>{{ outline.source_note }}</p>
+  <div class="cta-row">
+    <a class="button primary" href="{{ url_for('main.program_tool') }}">Use in program planner</a>
+    <a class="button secondary" href="{{ url_for('main.courses') }}">Browse course guides</a>
+  </div>
+</section>
+
+<section class="experience-shell">
+  <article class="experience-card thesis">
+    <p class="eyebrow">Research spine</p>
+    <h2>{{ outline.thesis.title }}</h2>
+    <div class="experience-meta">
+      {% for course in outline.thesis.courses %}
+        <span>{{ course }}</span>
+      {% endfor %}
+    </div>
+    <p>{{ outline.thesis.placement }}</p>
+    <p>{{ outline.thesis.why_it_matters }}</p>
+    <h3>How to use this strategically</h3>
+    <ul>
+      {% for action in outline.thesis.student_actions %}
+        <li>{{ action }}</li>
+      {% endfor %}
+    </ul>
+  </article>
+  <article class="experience-card coop">
+    <p class="eyebrow">Work-integrated learning</p>
+    <h2>{{ outline.coop.title }}</h2>
+    <div class="experience-meta">
+      {% for course in outline.coop.courses %}
+        <span>{{ course }}</span>
+      {% endfor %}
+    </div>
+    <p>{{ outline.coop.placement }}</p>
+    <p>{{ outline.coop.why_it_matters }}</p>
+    <h3>How to use this strategically</h3>
+    <ul>
+      {% for action in outline.coop.student_actions %}
+        <li>{{ action }}</li>
+      {% endfor %}
+    </ul>
+  </article>
+</section>
+
+<section class="outline-shell">
+  {% for year, terms in outline.terms|groupby("year") %}
+    <section class="outline-year">
+      <div class="outline-year-header">
+        <p class="eyebrow">{{ year }}</p>
+        <h2>{{ terms|length }} term{{ "s" if terms|length != 1 else "" }}</h2>
+      </div>
+      <div class="outline-term-grid">
+        {% for term in terms %}
+          <article class="outline-term">
+            <span>{{ term.term }}</span>
+            <h3>{{ term.program }}</h3>
+            <p>{{ term.note }}</p>
+            <div class="outline-course-list">
+              {% for code, title, units in term.courses %}
+                <div class="outline-course">
+                  <strong>{{ code }}</strong>
+                  <small>{{ title }}</small>
+                  <em>{{ units }}</em>
+                </div>
+              {% endfor %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+</section>
+
+<section class="notice-band light">
+  <strong>How to read this</strong>
+  <span>The outline is useful as a real pacing example: Level I gateway, Level II core, Level III upper-year physics before co-op, Level IV clinical/radiation/research courses, then final co-op. It should not override the current calendar.</span>
+</section>
+{% endblock %}

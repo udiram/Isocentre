@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Course Guides | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Course survival guide</p>
+  <h1>Course guides for the physics, math, biology, and computing mix.</h1>
+  <p>These are student-facing strategy pages, not private course materials or official syllabi.</p>
+  <div class="cta-row">
+    <a class="button primary" href="{{ url_for('main.program_tool') }}">Check program progress</a>
+    <a class="button secondary" href="{{ url_for('main.page', slug='level-ii-survival-guide') }}">Level II survival</a>
+    <a class="button secondary" href="{{ url_for('main.page', slug='upper-year-planning') }}">Choose upper-year track</a>
+  </div>
+</section>
+
+<section class="quick-flow course-pathway-flow" aria-label="Course pathway shortcuts">
+  <a href="{{ url_for('main.courses', track='medical-physics') }}"><span>A</span><strong>Medical physics</strong><small>Radiation, imaging, clinical preparation</small></a>
+  <a href="{{ url_for('main.courses', track='health-physics') }}"><span>HP</span><strong>Health physics</strong><small>Radiation safety and nuclear pathways</small></a>
+  <a href="{{ url_for('main.courses', track='data-ai') }}"><span>AI</span><strong>Imaging / data</strong><small>Python, image processing, portfolio work</small></a>
+  <a href="{{ url_for('main.courses', track='biological-physics') }}"><span>B</span><strong>Biophysics</strong><small>Molecular, biological, and wet/dry lab paths</small></a>
+</section>
+
+<section class="filter-bar">
+  <form method="get">
+    <input name="q" value="{{ query }}" placeholder="Search course, title, or topic">
+    <select name="level">
+      <option value="">All levels</option>
+      {% for value in [1,2,3,4] %}
+        <option value="{{ value }}" {% if level == value|string %}selected{% endif %}>Level {{ value }}</option>
+      {% endfor %}
+    </select>
+    <select name="track">
+      <option value="">All tracks</option>
+      {% for value, label in [("medical-physics","Medical physics"),("health-physics","Health physics"),("biological-physics","Biological physics"),("soft-matter","Soft matter"),("data-ai","Imaging / AI"),("research","Research")] %}
+        <option value="{{ value }}" {% if track == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button class="button primary" type="submit">Filter</button>
+  </form>
+</section>
+
+<section class="course-index">
+  {% for category, courses in grouped.items() %}
+    <div class="course-group">
+      <h2>{{ category }}</h2>
+      <div class="card-grid">
+        {% for course in courses %}
+          <a class="course-card" href="{{ url_for('main.course_detail', code=course.code) }}">
+            <span>{{ course.code }}</span>
+            <h3>{{ course.title }}</h3>
+            <p>{{ course.description }}</p>
+            <div class="rating-row" aria-label="Course intensity ratings">
+              <small>Level {{ course.level }}</small>
+              <small>Difficulty {{ course.difficulty }}/5</small>
+              <small>Workload {{ course.workload }}/5</small>
+            </div>
+            <p class="mini-tags">{{ course.track_tags|tags }}</p>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <p>No courses match that filter.</p>
+  {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Submit Course Review | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell">
+  <div class="tool-header">
+    <p class="eyebrow">Moderated submission</p>
+    <h1>Submit a course review</h1>
+    <p>Reviews enter the moderation queue from your signed-in account and are anonymous publicly after approval.</p>
+  </div>
+  <form class="tool-panel narrow" method="post">
+    <div class="submission-identity">
+      <strong>Submitting as {{ current_user.display_name }}</strong>
+      <span>{{ current_user.email }} stays private. Updates appear in your Isocentre notifications.</span>
+    </div>
+    <label>Course
+      <select name="course_code">
+        {% for course in courses %}
+          <option value="{{ course.code }}" {% if selected == course.code %}selected{% endif %}>{{ course.code }} — {{ course.title }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Term taken <input name="term_taken" placeholder="Winter 2026"></label>
+    <div class="field-grid">
+      {% for field,label in [("difficulty","Difficulty"),("workload","Workload"),("usefulness","Usefulness"),("math_intensity","Math"),("coding_intensity","Coding"),("memorization_intensity","Memorization")] %}
+        <label>{{ label }} <input required name="{{ field }}" type="number" min="1" max="5" value="3"></label>
+      {% endfor %}
+    </div>
+    <label>Would take again?
+      <select name="would_take_again"><option value="yes">Yes</option><option value="no">No</option></select>
+    </label>
+    <label>Advice <textarea required name="advice" rows="8" placeholder="What made it hard? How should students study? What did it unlock?"></textarea></label>
+    <p class="form-note">Do not include private course materials, assignment solutions, test details, or personal attacks.</p>
+    <button class="button primary" type="submit">Submit for moderation</button>
+  </form>
+</section>
+{% endblock %}

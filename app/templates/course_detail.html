@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}{{ course.code }} Survival Guide | Isocentre{% endblock %}
+{% block content %}
+<article class="article-shell">
+  <header class="article-header compact">
+    <p class="eyebrow">{{ course.category }}</p>
+    <h1>{{ course.code }} Survival Guide: {{ course.title }}</h1>
+    <p>{{ course.description }}</p>
+    <div class="meta-row">
+      <span>Level {{ course.level }}</span>
+      <span>{{ course.units }} units</span>
+      <span>{{ course.requirement_roles|tags }}</span>
+    </div>
+  </header>
+
+  <section class="ratings-panel" aria-label="Course intensity ratings">
+    {% for label, value in [
+      ("Difficulty", course.difficulty),
+      ("Workload", course.workload),
+      ("Math", course.math_intensity),
+      ("Coding", course.coding_intensity),
+      ("Memorization", course.memorization_intensity)
+    ] %}
+      <div>
+        <span>{{ label }}</span>
+        <strong>{{ value }}/5</strong>
+        <meter min="0" max="5" value="{{ value }}">{{ value }} out of 5</meter>
+      </div>
+    {% endfor %}
+  </section>
+
+  <div class="article-layout">
+    <div class="article-body detail-list">
+      <div class="course-planning-box">
+        <h2>How to use this course</h2>
+        <ul>
+          {% for item in action_plan %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <h2>What to know before starting</h2>
+      <p>{{ course.before_starting }}</p>
+      <h2>Official role</h2>
+      <p>{{ course.official_notes }}</p>
+      <p><a href="{{ course.calendar_url }}" target="_blank" rel="noreferrer">Check the official calendar, prerequisites, antirequisites, and offering status.</a></p>
+      <h2>Best resources</h2>
+      <p>{{ course.resources }}</p>
+      <h2>Common failure points</h2>
+      <p>{{ course.failure_points }}</p>
+      <h2>How to study</h2>
+      <p>{{ course.study_strategy }}</p>
+      <h2>What it unlocks</h2>
+      <p>{{ course.unlocks }}</p>
+      <h2>Pair this with</h2>
+      <p>{{ course.pair_with }}</p>
+      <h2>Student tip</h2>
+      <p>{{ course.student_tips }}</p>
+      <h2>Student-reported notes</h2>
+      <p>{{ course.student_reported }}</p>
+      {% if pathway_links %}
+        <h2>Pathway connections</h2>
+        <div class="roadmap-links inline">
+          {% for title, slug in pathway_links %}
+            <a href="{{ url_for('main.page', slug=slug) }}">{{ title }}</a>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="review-summary">
+        <h2>Course reviews</h2>
+        {% if review_summary %}
+          <p>{{ review_summary.count }} approved review{{ "s" if review_summary.count != 1 else "" }}. Average difficulty {{ review_summary.difficulty }}/5, workload {{ review_summary.workload }}/5, usefulness {{ review_summary.usefulness }}/5. {{ review_summary.would_take_again }}% would take again.</p>
+        {% else %}
+          <p>No approved reviews yet. Be the first to add a moderated student report.</p>
+        {% endif %}
+        <div class="cta-row">
+          <a class="button secondary" href="{{ url_for('main.course_reviews', code=course.code) }}">Read reviews</a>
+          <a class="button primary" href="{{ url_for('main.submit_review', course=course.code) }}">Submit review</a>
+        </div>
+      </div>
+    </div>
+    <aside class="article-aside">
+      <div class="aside-box warning">
+        <strong>No private materials</strong>
+        <p>Isocentre hosts original strategy notes only. Do not upload copyrighted tests, solutions, or private course files.</p>
+      </div>
+      <div class="aside-box">
+        <strong>Personal planner</strong>
+        {% if current_user %}
+          <form method="post" action="{{ url_for('main.save_course', code=course.code) }}">
+            <label>Status
+              <select name="status">
+                <option value="interested">interested</option>
+                <option value="planned">planned</option>
+                <option value="in-progress">in-progress</option>
+                <option value="completed">completed</option>
+              </select>
+            </label>
+            <button class="button secondary full" type="submit">Save course</button>
+          </form>
+        {% else %}
+          <p>Sign in to save this course to your planner.</p>
+          <a href="{{ url_for('main.login') }}">Sign in</a>
+        {% endif %}
+      </div>
+      <div class="aside-box">
+        <strong>Next</strong>
+        <a href="{{ url_for('main.courses') }}">All course guides</a>
+        <a href="{{ url_for('main.program_tool') }}">Program requirement planner</a>
+        <a href="{{ url_for('main.page', slug='upper-year-planning') }}">Upper-year planning</a>
+        <a href="{{ url_for('main.page', slug='level-ii-survival-guide') }}">Level II survival guide</a>
+      </div>
+    </aside>
+  </div>
+</article>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ course.code }} Reviews | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Student-reported, moderated</p>
+  <h1>{{ course.code }} reviews</h1>
+  <p>Reviews are unofficial, term-dependent, and moderated. They should describe workload and strategy, not private course materials.</p>
+  <div class="cta-row">
+    <a class="button secondary" href="{{ url_for('main.course_detail', code=course.code) }}">Back to guide</a>
+    <a class="button primary" href="{{ url_for('main.submit_review', course=course.code) }}">Submit review</a>
+  </div>
+</section>
+
+<section class="review-list">
+  {% if review_summary %}
+    <div class="notice-band light">
+      <strong>{{ review_summary.count }} approved reviews</strong>
+      <span>Difficulty {{ review_summary.difficulty }}/5 · Workload {{ review_summary.workload }}/5 · Usefulness {{ review_summary.usefulness }}/5 · {{ review_summary.would_take_again }}% would take again</span>
+    </div>
+  {% endif %}
+  {% for review in reviews %}
+    <article class="review-card">
+      <div class="rating-row">
+        <small>Difficulty {{ review.difficulty }}/5</small>
+        <small>Workload {{ review.workload }}/5</small>
+        <small>Usefulness {{ review.usefulness }}/5</small>
+        <small>{{ review.term_taken }}</small>
+      </div>
+      <p>{{ review.advice }}</p>
+    </article>
+  {% else %}
+    <p>No approved reviews yet.</p>
+  {% endfor %}
+  {% if pagination and pagination.pages > 1 %}
+    <nav class="pagination" aria-label="Review pages">
+      {% if pagination.has_prev %}<a href="{{ url_for('main.course_reviews', code=course.code, page=pagination.prev_num) }}">Previous</a>{% endif %}
+      <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.has_next %}<a href="{{ url_for('main.course_reviews', code=course.code, page=pagination.next_num) }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

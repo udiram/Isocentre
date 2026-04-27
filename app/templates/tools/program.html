@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Program Planner | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell program-planner" data-tool="program">
+  <div class="tool-header">
+    <p class="eyebrow">Undergrad planner</p>
+    <h1>Build a MedBioPhys plan by clicking courses, not pasting a wall of text.</h1>
+    <p>Pick completed or planned courses from the official core and Course List A/B/C options. The checker updates Level II-IV progress and track recommendations.</p>
+    <div class="cta-row">
+      <button class="button primary" id="load-sample-outline" type="button" data-courses="{{ sample_outline.codes|join(',') }}">Load sample 5-year outline</button>
+      <a class="button secondary" href="{{ url_for('main.sample_course_outline_page') }}">View sample outline</a>
+    </div>
+  </div>
+
+  <div class="planner-workspace">
+    <form class="planner-board" id="program-form">
+      <div class="planner-toolbar">
+        <label>Quick add course codes
+          <input id="program-manual-courses" placeholder="Example: MEDPHYS 4D03, PHYSICS 4G03">
+        </label>
+        <button class="button secondary" type="button" id="clear-program-selection">Clear</button>
+        <button class="button primary" type="submit">Update progress</button>
+      </div>
+      <input type="hidden" id="program-courses">
+
+      {% for group in planner_groups %}
+        <section class="planner-group">
+          <div class="planner-group-header">
+            <p class="eyebrow">{{ group.label }}</p>
+            <span>{{ group.rules|length }} requirement block{{ "s" if group.rules|length != 1 else "" }}</span>
+          </div>
+          <div class="planner-rule-grid">
+            {% for item in group.rules %}
+              <article class="planner-rule-card">
+                <div class="planner-rule-heading">
+                  <h2>{{ item.rule.label }}</h2>
+                  <p>{{ item.rule.description }}</p>
+                  {% if item.rule.advisory_note %}<small>{{ item.rule.advisory_note }}</small>{% endif %}
+                </div>
+                {% if item.options %}
+                  <div class="course-chip-grid">
+                    {% for option in item.options %}
+                      <label class="course-chip">
+                        <input type="checkbox" value="{{ option.code }}">
+                        <span>
+                          <strong>{{ option.code }}</strong>
+                          <small>{{ option.title }}</small>
+                          <em>{{ option.units }} units{% if option.level %} · Level {{ option.level }}{% endif %}</em>
+                        </span>
+                      </label>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <p class="form-note">Advisor-check item. This planner cannot fully enumerate this rule.</p>
+                {% endif %}
+              </article>
+            {% endfor %}
+          </div>
+        </section>
+      {% endfor %}
+    </form>
+
+    <aside class="planner-progress">
+      <div class="progress-sticky">
+        <span>Program progress</span>
+        <div class="selected-summary">
+          <strong id="selected-count">0</strong>
+          <small>selected courses</small>
+        </div>
+        <div id="program-result">
+          {% for group in planner_groups %}
+            <div class="status-group">
+              <h3>{{ group.label }}</h3>
+              {% for item in group.rules %}
+                <div class="status-row pending">
+                  <strong>{{ item.rule.label }}</strong>
+                  <p>{{ item.rule.description }}</p>
+                  {% if item.options %}
+                    <p><small>Options: {{ item.options|length }} course{{ "s" if item.options|length != 1 else "" }}</small></p>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+        <p class="form-note">Use this as planning support only. Confirm prerequisites, antirequisites, substitutions, and offering status with official advising.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}
