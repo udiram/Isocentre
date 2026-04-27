@@ -1,52 +1,121 @@
 {% extends "base.html" %}
 {% block title %}Messages | Isocentre{% endblock %}
 {% block content %}
-<section class="page-hero">
-  <p class="eyebrow">Mentor messages</p>
-  <h1>Your Isocentre message inbox.</h1>
-  <p>Students can contact opt-in mentors without exposing private email addresses.</p>
-  <div class="cta-row">
-    <a class="button primary" href="{{ url_for('main.mentors') }}">Find mentors</a>
-    <a class="button secondary" href="{{ url_for('main.notifications') }}">Notifications</a>
-  </div>
-</section>
+<section class="message-app-shell" aria-label="Isocentre messages">
+  <header class="message-app-topbar">
+    <div>
+      <p class="eyebrow">Mentor messages</p>
+      <h1>Messages</h1>
+      <p>Chat with opt-in mentors and mentees inside Isocentre. Share context, files, plans, and follow-up questions without exposing private email addresses.</p>
+    </div>
+    <div class="message-app-actions">
+      <a class="button secondary" href="{{ url_for('main.mentors') }}">Find mentors</a>
+      <a class="button secondary" href="{{ url_for('main.notifications') }}">Notifications</a>
+    </div>
+  </header>
 
-<section class="message-layout">
-  <div>
-    <div class="section-heading">
-      <p class="eyebrow">Inbox</p>
-      <h2>Received</h2>
-    </div>
-    {% for message in inbox %}
-      <a class="message-row {% if not message.read_at %}unread{% endif %}" href="{{ url_for('main.message_detail', message_id=message.id) }}">
-        <span>{{ message.sender.display_name }}</span>
-        <strong>{{ message.subject }}</strong>
-        <small>{{ message.created_at.strftime("%b %-d, %Y") }}</small>
-      </a>
-    {% else %}
-      <div class="notification-card">
-        <h3>No received messages</h3>
-        <p>When students message your approved mentor profile, the message appears here.</p>
+  <div class="chat-app">
+    <aside class="chat-sidebar" aria-label="Conversations">
+      <div class="chat-sidebar-header">
+        <div>
+          <span class="eyebrow">Inbox</span>
+          <h2>Conversations</h2>
+        </div>
+        <span class="chat-count">{{ threads|length }}</span>
       </div>
-    {% endfor %}
-  </div>
-  <div>
-    <div class="section-heading">
-      <p class="eyebrow">Sent</p>
-      <h2>Messages you sent</h2>
-    </div>
-    {% for message in sent %}
-      <a class="message-row" href="{{ url_for('main.message_detail', message_id=message.id) }}">
-        <span>To {{ message.recipient.display_name }}</span>
-        <strong>{{ message.subject }}</strong>
-        <small>{{ message.created_at.strftime("%b %-d, %Y") }}</small>
-      </a>
-    {% else %}
-      <div class="notification-card">
-        <h3>No sent messages</h3>
-        <p>Use the mentor directory to contact students or alumni by pathway fit.</p>
-      </div>
-    {% endfor %}
+      {% if threads %}
+        <div class="chat-thread-list">
+          {% for thread in threads %}
+            {% set last = thread.last_message %}
+            {% set is_active = active_thread and active_thread.key == thread.key %}
+            <a class="chat-thread {% if is_active %}active{% endif %} {% if thread.unread_count %}unread{% endif %}" href="{{ url_for('main.messages', thread=last.id) }}">
+              <span class="chat-avatar" aria-hidden="true">{{ thread.peer.display_name[:1] if thread.peer else "?" }}</span>
+              <span class="chat-thread-main">
+                <strong>{{ thread.peer.display_name if thread.peer else "Unknown user" }}</strong>
+                <small>{{ thread.mentor.display_name if thread.mentor else "Mentor profile" }}</small>
+                <span>{{ last.body|truncate(82) }}</span>
+              </span>
+              <span class="chat-thread-meta">
+                <time datetime="{{ last.created_at.isoformat() }}">{{ last.created_at.strftime("%b %-d") }}</time>
+                {% if thread.unread_count %}<b>{{ thread.unread_count }}</b>{% endif %}
+                {% if thread.attachment_count %}<small>{{ thread.attachment_count }} file{% if thread.attachment_count != 1 %}s{% endif %}</small>{% endif %}
+              </span>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="chat-sidebar-empty">
+          <strong>No conversations yet</strong>
+          <p>Start from the mentor directory and send a focused question about courses, research, co-op, grad school, or pathway planning.</p>
+          <a class="button primary" href="{{ url_for('main.mentors') }}">Browse mentors</a>
+        </div>
+      {% endif %}
+    </aside>
+
+    <section class="chat-panel" aria-label="Active conversation">
+      {% if active_thread %}
+        <header class="chat-panel-header">
+          <div class="chat-avatar large" aria-hidden="true">{{ active_thread.peer.display_name[:1] if active_thread.peer else "?" }}</div>
+          <div>
+            <p class="eyebrow">{{ active_thread.mentor.display_name if active_thread.mentor else "Mentor thread" }}</p>
+            <h2>{{ active_thread.peer.display_name if active_thread.peer else "Conversation" }}</h2>
+            <p>{{ active_thread.message_count }} message{% if active_thread.message_count != 1 %}s{% endif %}{% if active_thread.attachment_count %} · {{ active_thread.attachment_count }} attachment{% if active_thread.attachment_count != 1 %}s{% endif %}{% endif %}</p>
+          </div>
+          <a class="button secondary" href="{{ url_for('main.mentors') }}">Directory</a>
+        </header>
+
+        <div class="chat-window">
+          {% for message in active_messages %}
+            {% set mine = message.sender_id == current_user.id %}
+            <article class="chat-bubble-row {% if mine %}mine{% else %}theirs{% endif %}">
+              <div class="chat-bubble">
+                <div class="chat-bubble-meta">
+                  <strong>{{ "You" if mine else message.sender.display_name }}</strong>
+                  <time datetime="{{ message.created_at.isoformat() }}">{{ message.created_at.strftime("%b %-d, %Y · %-I:%M %p") }}</time>
+                </div>
+                <p>{{ message.body }}</p>
+                {% if message.attachments.count() %}
+                  <div class="attachment-list" aria-label="Attachments">
+                    {% for attachment in message.attachments.all() %}
+                      <a class="attachment-pill" href="{{ url_for('main.download_message_attachment', attachment_id=attachment.id) }}">
+                        <span aria-hidden="true">⌁</span>
+                        <strong>{{ attachment.original_filename }}</strong>
+                        <small>{{ (attachment.file_size / 1024)|round(1) }} KB</small>
+                      </a>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+
+        <form class="chat-composer" method="post" action="{{ url_for('main.reply_message', message_id=active_thread.last_message.id) }}" enctype="multipart/form-data">
+          <label class="sr-only" for="reply-body">Reply</label>
+          <textarea id="reply-body" name="body" rows="3" placeholder="Reply with context, next steps, links, or a specific question."></textarea>
+          <div class="chat-composer-footer">
+            <label class="file-drop">Attach files
+              <input name="attachments" type="file" multiple>
+              <span>PDFs, images, docs, spreadsheets, zipped portfolios. Max 4 files, 8 MB each.</span>
+            </label>
+            <button class="button primary" type="submit">Send</button>
+          </div>
+          <p class="form-note">Keep messages mentorship-focused. Do not share private tests, assignment solutions, or copyrighted course materials.</p>
+        </form>
+      {% else %}
+        <div class="chat-empty-state">
+          <p class="eyebrow">Start a useful conversation</p>
+          <h2>No active chat yet.</h2>
+          <p>Use Isocentre messages for research outreach prep, co-op questions, course planning, CAMPEP/grad school decisions, and pathway-specific advice.</p>
+          <div class="chat-prompt-grid">
+            <span>“What should I do before emailing supervisors?”</span>
+            <span>“How did you choose Course List A/B/C electives?”</span>
+            <span>“What made your co-op application stronger?”</span>
+          </div>
+          <a class="button primary" href="{{ url_for('main.mentors') }}">Find someone to message</a>
+        </div>
+      {% endif %}
+    </section>
   </div>
 </section>
 {% endblock %}

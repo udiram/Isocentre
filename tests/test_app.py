@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pytest
 
 from app import create_app, db
@@ -5,6 +7,7 @@ from app.models import (
     Course,
     CourseReview,
     MentorMessage,
+    MentorMessageAttachment,
     MentorProfile,
     ModerationStatus,
     Notification,
@@ -400,13 +403,41 @@ def test_mentor_message_creates_inbox_notification(client, app):
     )
     response = client.post(
         f"/community/mentors/{mentor_id}/message",
-        data={"subject": "Research question", "body": "How should I start research outreach?"},
+        data={
+            "subject": "Research question",
+            "body": "How should I start research outreach?",
+            "attachments": (BytesIO(b"sample course plan"), "plan.pdf"),
+        },
+        content_type="multipart/form-data",
     )
     assert response.status_code == 302
     with app.app_context():
         message = MentorMessage.query.one()
         assert message.recipient_id == mentor_user_id
+        assert message.attachments.count() == 1
+        attachment_id = message.attachments.first().id
+        message_id = message.id
         assert Notification.query.filter_by(user_id=mentor_user_id, category="message").count() == 1
+
+    download = client.get(f"/messages/attachments/{attachment_id}")
+    assert download.status_code == 200
+    assert download.data == b"sample course plan"
+
+    with client.session_transaction() as sess:
+        sess["user_id"] = mentor_user_id
+    reply = client.post(
+        f"/messages/{message_id}/reply",
+        data={
+            "body": "Start by reading lab pages and sending two focused emails.",
+            "attachments": (BytesIO(b"email draft"), "draft.txt"),
+        },
+        content_type="multipart/form-data",
+    )
+    assert reply.status_code == 302
+    with app.app_context():
+        assert MentorMessage.query.count() == 2
+        assert MentorMessageAttachment.query.count() == 2
+        assert Notification.query.filter_by(category="message").count() == 2
 
 
 def test_mentor_directory_filters_by_tag_availability_and_dm(client, app):

@@ -42,6 +42,9 @@ def create_app(test_config=None):
         MAIL_USE_TLS=os.getenv("MAIL_USE_TLS", "true").lower() != "false",
         SITE_BASE_URL=os.getenv("SITE_BASE_URL", "http://127.0.0.1:5000"),
         GOOGLE_ANALYTICS_ID=os.getenv("GOOGLE_ANALYTICS_ID", "G-KZ430V2G5C"),
+        MAX_CONTENT_LENGTH=int(os.getenv("MAX_CONTENT_LENGTH", str(24 * 1024 * 1024))),
+        MESSAGE_ATTACHMENT_MAX_BYTES=int(os.getenv("MESSAGE_ATTACHMENT_MAX_BYTES", str(8 * 1024 * 1024))),
+        MESSAGE_ATTACHMENT_MAX_COUNT=int(os.getenv("MESSAGE_ATTACHMENT_MAX_COUNT", "4")),
     )
 
     if test_config:

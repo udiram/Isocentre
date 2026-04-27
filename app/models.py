@@ -233,3 +233,14 @@ class MentorMessage(TimestampMixin, db.Model):
     subject = db.Column(db.String(180), nullable=False)
     body = db.Column(db.Text, nullable=False)
     read_at = db.Column(db.DateTime, nullable=True, index=True)
+    attachments = db.relationship("MentorMessageAttachment", back_populates="message", cascade="all, delete-orphan", lazy="dynamic")
+
+
+class MentorMessageAttachment(TimestampMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey("mentor_message.id"), nullable=False, index=True)
+    message = db.relationship("MentorMessage", back_populates="attachments")
+    original_filename = db.Column(db.String(255), nullable=False)
+    content_type = db.Column(db.String(120), nullable=False, default="application/octet-stream")
+    file_size = db.Column(db.Integer, nullable=False, default=0)
+    data = db.Column(db.LargeBinary, nullable=False)

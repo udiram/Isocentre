@@ -26,6 +26,9 @@
       </div>
       <h3>{{ message.subject }}</h3>
       <p>{{ message.body }}</p>
+      {% if message.attachments.count() %}
+        <p><strong>Attachments:</strong> {{ message.attachments.count() }}</p>
+      {% endif %}
       {% if message.mentor %}
         <p><strong>Mentor profile:</strong> <a href="{{ url_for('main.admin_mentor_edit', mentor_id=message.mentor.id) }}">{{ message.mentor.display_name }}</a></p>
       {% endif %}

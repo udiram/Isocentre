@@ -8,7 +8,7 @@
     <p>{{ mentor.role_year }} · {{ mentor.pathway_tags|tags }}</p>
   </div>
   <div class="content-split align-start">
-    <form class="tool-panel" method="post">
+    <form class="tool-panel" method="post" enctype="multipart/form-data">
       <div class="submission-identity">
         <strong>Sending as {{ current_user.display_name }} · {{ current_user.stage }}</strong>
         <span>The message stays inside Isocentre. The mentor will get an inbox notification.</span>
@@ -18,7 +18,11 @@
         <input name="subject" required maxlength="180" placeholder="Question about Level II research / co-op / CAMPEP">
       </label>
       <label>Message
-        <textarea name="body" required rows="9" placeholder="Be specific: your stage, what you are deciding, what you already tried, and what kind of advice would help."></textarea>
+        <textarea name="body" rows="9" placeholder="Be specific: your stage, what you are deciding, what you already tried, and what kind of advice would help."></textarea>
+      </label>
+      <label class="file-drop">Attach files
+        <input name="attachments" type="file" multiple>
+        <span>Optional: resume, transcript screenshot, course plan, research summary, poster, or portfolio zip. Max 4 files, 8 MB each.</span>
       </label>
       <p class="form-note">Keep it respectful and practical. Do not ask for private course materials or assignment help.</p>
       <button class="button primary" type="submit">Send message</button>

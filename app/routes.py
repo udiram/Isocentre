@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timezone
 from functools import wraps
+from io import BytesIO
 
 import markdown
 from flask import (
@@ -13,9 +14,11 @@ from flask import (
     render_template,
     request,
     session,
+    send_file,
     url_for,
 )
 from sqlalchemy import or_
+from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import db
@@ -34,6 +37,7 @@ from .models import (
     CourseReview,
     EmailVerificationToken,
     MentorMessage,
+    MentorMessageAttachment,
     MentorProfile,
     ModerationStatus,
     Notification,
@@ -565,26 +569,91 @@ def mark_all_notifications_read():
 @login_required
 def messages():
     user = current_user()
-    inbox = MentorMessage.query.filter_by(recipient_id=user.id).order_by(MentorMessage.created_at.desc()).all()
-    sent = MentorMessage.query.filter_by(sender_id=user.id).order_by(MentorMessage.created_at.desc()).limit(40).all()
-    return render_template("messages.html", inbox=inbox, sent=sent)
+    threads = build_message_threads(user)
+    active_seed = None
+    requested_thread = bounded_int(request.args.get("thread"), 0, 10**9, 0)
+    if requested_thread:
+        active_seed = authorized_message_or_404(requested_thread, user)
+    elif threads:
+        active_seed = threads[0]["last_message"]
+
+    active_messages = []
+    active_thread = None
+    if active_seed:
+        active_messages = conversation_messages_for(active_seed, user.id).all()
+        mark_conversation_read(active_messages, user.id)
+        active_thread = summarize_conversation(active_messages[-1], user.id) if active_messages else summarize_conversation(active_seed, user.id)
+        db.session.commit()
+        threads = build_message_threads(user)
+
+    return render_template("messages.html", threads=threads, active_thread=active_thread, active_messages=active_messages)
 
 
 @bp.route("/messages/<int:message_id>")
 @login_required
 def message_detail(message_id):
     user = current_user()
-    message = MentorMessage.query.filter(
-        MentorMessage.id == message_id,
-        or_(MentorMessage.recipient_id == user.id, MentorMessage.sender_id == user.id),
-    ).first_or_404()
-    if message.recipient_id == user.id and not message.read_at:
-        message.read_at = datetime.now(timezone.utc)
-        Notification.query.filter_by(
-            user_id=user.id, target_type="MentorMessage", target_id=message.id, read_at=None
-        ).update({"read_at": message.read_at})
-        db.session.commit()
-    return render_template("message_detail.html", message=message)
+    message = authorized_message_or_404(message_id, user)
+    return redirect(url_for("main.messages", thread=message.id))
+
+
+@bp.route("/messages/<int:message_id>/reply", methods=["POST"])
+@login_required
+def reply_message(message_id):
+    user = current_user()
+    seed = authorized_message_or_404(message_id, user)
+    recipient = seed.sender if seed.recipient_id == user.id else seed.recipient
+    body = clean_multiline_text(request.form.get("body", ""))
+    files = request.files.getlist("attachments")
+    if not body and not has_uploads(files):
+        flash("Write a message or attach a file before sending.", "error")
+        return redirect(url_for("main.messages", thread=seed.id))
+
+    message = MentorMessage(
+        mentor_id=seed.mentor_id,
+        sender_id=user.id,
+        recipient_id=recipient.id,
+        subject=reply_subject(seed.subject),
+        body=body or "Shared an attachment.",
+    )
+    db.session.add(message)
+    db.session.flush()
+    try:
+        attach_uploaded_files(message, files)
+    except ValueError as exc:
+        db.session.rollback()
+        flash(str(exc), "error")
+        return redirect(url_for("main.messages", thread=seed.id))
+
+    notify_user(
+        recipient.id,
+        "New message reply",
+        f"{user.display_name} replied in Isocentre messages.",
+        "message",
+        url_for("main.messages", thread=message.id),
+        actor_label=user.display_name,
+        target_type="MentorMessage",
+        target_id=message.id,
+    )
+    db.session.commit()
+    flash("Reply sent.", "success")
+    return redirect(url_for("main.messages", thread=message.id))
+
+
+@bp.route("/messages/attachments/<int:attachment_id>")
+@login_required
+def download_message_attachment(attachment_id):
+    user = current_user()
+    attachment = db.session.get(MentorMessageAttachment, attachment_id)
+    if not attachment or attachment.message.sender_id != user.id and attachment.message.recipient_id != user.id:
+        abort(404)
+    return send_file(
+        BytesIO(attachment.data),
+        mimetype=attachment.content_type or "application/octet-stream",
+        as_attachment=True,
+        download_name=attachment.original_filename,
+        max_age=0,
+    )
 
 
 @bp.route("/community")
@@ -824,25 +893,32 @@ def message_mentor(mentor_id):
     if request.method == "GET":
         return render_template("message_mentor.html", mentor=mentor)
     subject = clean_text(request.form.get("subject", "Mentorship question"))
-    body = clean_text(request.form.get("body", ""))
-    if not body:
-        flash("Write a short message before sending.", "error")
+    body = clean_multiline_text(request.form.get("body", ""))
+    files = request.files.getlist("attachments")
+    if not body and not has_uploads(files):
+        flash("Write a short message or attach a file before sending.", "error")
         return render_template("message_mentor.html", mentor=mentor), 400
     message = MentorMessage(
         mentor_id=mentor.id,
         sender_id=user.id,
         recipient_id=mentor.user_id,
         subject=subject,
-        body=body,
+        body=body or "Shared an attachment.",
     )
     db.session.add(message)
     db.session.flush()
+    try:
+        attach_uploaded_files(message, files)
+    except ValueError as exc:
+        db.session.rollback()
+        flash(str(exc), "error")
+        return render_template("message_mentor.html", mentor=mentor), 400
     notify_user(
         mentor.user_id,
         "New mentor message",
         f"{user.display_name} sent you a question: {subject}",
         "message",
-        url_for("main.message_detail", message_id=message.id),
+        url_for("main.messages", thread=message.id),
         actor_label=user.display_name,
         target_type="MentorMessage",
         target_id=message.id,
@@ -1104,6 +1180,7 @@ def admin_delete(target_type, target_id):
             Notification.query.filter(Notification.target_type == "MentorMessage", Notification.target_id.in_(message_ids)).delete(
                 synchronize_session=False
             )
+            MentorMessageAttachment.query.filter(MentorMessageAttachment.message_id.in_(message_ids)).delete(synchronize_session=False)
         MentorMessage.query.filter_by(mentor_id=target.id).delete(synchronize_session=False)
     else:
         target = get_moderated_target(target_type, target_id)
@@ -1242,6 +1319,154 @@ def current_user():
     if not user_id:
         return None
     return db.session.get(UserAccount, user_id)
+
+
+def authorized_message_or_404(message_id, user):
+    return MentorMessage.query.filter(
+        MentorMessage.id == message_id,
+        or_(MentorMessage.recipient_id == user.id, MentorMessage.sender_id == user.id),
+    ).first_or_404()
+
+
+def conversation_peer_id(message, user_id):
+    return message.sender_id if message.recipient_id == user_id else message.recipient_id
+
+
+def conversation_messages_for(seed_message, user_id):
+    peer_id = conversation_peer_id(seed_message, user_id)
+    return MentorMessage.query.filter(
+        MentorMessage.mentor_id == seed_message.mentor_id,
+        or_(
+            (MentorMessage.sender_id == user_id) & (MentorMessage.recipient_id == peer_id),
+            (MentorMessage.sender_id == peer_id) & (MentorMessage.recipient_id == user_id),
+        ),
+    ).order_by(MentorMessage.created_at.asc(), MentorMessage.id.asc())
+
+
+def summarize_conversation(message, user_id):
+    peer = message.sender if message.recipient_id == user_id else message.recipient
+    messages = conversation_messages_for(message, user_id).all()
+    unread_count = sum(1 for item in messages if item.recipient_id == user_id and not item.read_at)
+    attachment_count = sum(item.attachments.count() for item in messages)
+    return {
+        "key": f"{message.mentor_id}:{conversation_peer_id(message, user_id)}",
+        "mentor": message.mentor,
+        "peer": peer,
+        "last_message": messages[-1] if messages else message,
+        "message_count": len(messages),
+        "unread_count": unread_count,
+        "attachment_count": attachment_count,
+    }
+
+
+def build_message_threads(user):
+    messages = MentorMessage.query.filter(
+        or_(MentorMessage.recipient_id == user.id, MentorMessage.sender_id == user.id)
+    ).order_by(MentorMessage.created_at.desc(), MentorMessage.id.desc()).all()
+    seen = set()
+    threads = []
+    for message in messages:
+        key = (message.mentor_id, conversation_peer_id(message, user.id))
+        if key in seen:
+            continue
+        seen.add(key)
+        threads.append(summarize_conversation(message, user.id))
+    return threads
+
+
+def mark_conversation_read(messages, user_id):
+    unread_ids = []
+    now = datetime.now(timezone.utc)
+    for message in messages:
+        if message.recipient_id == user_id and not message.read_at:
+            message.read_at = now
+            unread_ids.append(message.id)
+    if unread_ids:
+        Notification.query.filter(
+            Notification.user_id == user_id,
+            Notification.target_type == "MentorMessage",
+            Notification.target_id.in_(unread_ids),
+            Notification.read_at.is_(None),
+        ).update({"read_at": now}, synchronize_session=False)
+
+
+def reply_subject(subject):
+    subject = clean_text(subject) or "Mentor message"
+    return subject if subject.lower().startswith("re:") else f"Re: {subject}"
+
+
+def has_uploads(files):
+    return any(file and file.filename for file in files)
+
+
+def attach_uploaded_files(message, files):
+    uploads = [file for file in files if file and file.filename]
+    if not uploads:
+        return
+    max_count = current_app.config.get("MESSAGE_ATTACHMENT_MAX_COUNT", 4)
+    max_bytes = current_app.config.get("MESSAGE_ATTACHMENT_MAX_BYTES", 8 * 1024 * 1024)
+    if len(uploads) > max_count:
+        raise ValueError(f"Attach up to {max_count} files per message.")
+    for upload in uploads:
+        filename = secure_filename(upload.filename)
+        if not filename:
+            raise ValueError("One attachment has an invalid filename.")
+        if is_blocked_attachment(filename):
+            raise ValueError("That file type is not allowed. Attach documents, images, spreadsheets, PDFs, or zipped project files.")
+        data = upload.read()
+        if not data:
+            continue
+        if len(data) > max_bytes:
+            max_mb = max_bytes // (1024 * 1024)
+            raise ValueError(f"{filename} is too large. Keep each attachment under {max_mb} MB.")
+        db.session.add(
+            MentorMessageAttachment(
+                message_id=message.id,
+                original_filename=filename,
+                content_type=upload.mimetype or "application/octet-stream",
+                file_size=len(data),
+                data=data,
+            )
+        )
+
+
+def is_blocked_attachment(filename):
+    blocked_extensions = {
+        ".ade",
+        ".adp",
+        ".app",
+        ".bat",
+        ".cmd",
+        ".com",
+        ".cpl",
+        ".exe",
+        ".hta",
+        ".ins",
+        ".isp",
+        ".jar",
+        ".js",
+        ".jse",
+        ".lib",
+        ".lnk",
+        ".mde",
+        ".msc",
+        ".msp",
+        ".mst",
+        ".pif",
+        ".ps1",
+        ".scr",
+        ".sh",
+        ".vb",
+        ".vbe",
+        ".vbs",
+        ".vxd",
+        ".ws",
+        ".wsc",
+        ".wsf",
+        ".wsh",
+    }
+    lowered = filename.lower()
+    return any(lowered.endswith(extension) for extension in blocked_extensions)
 
 
 def grouped_program_results(completed_codes):
@@ -2074,6 +2299,7 @@ def save_admin_mentor_form(mentor):
 
 def delete_mentor_message(message):
     Notification.query.filter_by(target_type="MentorMessage", target_id=message.id).delete(synchronize_session=False)
+    MentorMessageAttachment.query.filter_by(message_id=message.id).delete(synchronize_session=False)
     db.session.add(AdminAuditLog(action="delete", target_type="MentorMessage", target_id=message.id, detail=message.subject))
     db.session.delete(message)
 
@@ -2088,6 +2314,7 @@ def delete_user_account(user):
         Notification.query.filter(Notification.target_type == "MentorMessage", Notification.target_id.in_(message_ids)).delete(
             synchronize_session=False
         )
+        MentorMessageAttachment.query.filter(MentorMessageAttachment.message_id.in_(message_ids)).delete(synchronize_session=False)
         MentorMessage.query.filter(MentorMessage.id.in_(message_ids)).delete(synchronize_session=False)
 
     if mentor_ids:
@@ -2137,6 +2364,13 @@ def clean_text(value):
     if value is None:
         return ""
     return " ".join(str(value).strip().split()) or ""
+
+
+def clean_multiline_text(value):
+    if value is None:
+        return ""
+    lines = [" ".join(line.strip().split()) for line in str(value).strip().splitlines()]
+    return "\n".join(line for line in lines if line)
 
 
 def split_tags(value):
