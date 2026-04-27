@@ -41,6 +41,7 @@ def create_app(test_config=None):
         or ("Isocentre <onboarding@resend.dev>" if resend_api_key else ""),
         MAIL_USE_TLS=os.getenv("MAIL_USE_TLS", "true").lower() != "false",
         SITE_BASE_URL=os.getenv("SITE_BASE_URL", "http://127.0.0.1:5000"),
+        GOOGLE_ANALYTICS_ID=os.getenv("GOOGLE_ANALYTICS_ID", "G-KZ430V2G5C"),
     )
 
     if test_config:

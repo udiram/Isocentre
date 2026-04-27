@@ -57,7 +57,12 @@ def inject_user():
     if user:
         unread_notifications = Notification.query.filter_by(user_id=user.id, read_at=None).count()
         unread_messages = MentorMessage.query.filter_by(recipient_id=user.id, read_at=None).count()
-    return {"current_user": user, "unread_notifications": unread_notifications, "unread_messages": unread_messages}
+    return {
+        "current_user": user,
+        "unread_notifications": unread_notifications,
+        "unread_messages": unread_messages,
+        "google_analytics_id": current_app.config.get("GOOGLE_ANALYTICS_ID", ""),
+    }
 
 
 def login_required(view):

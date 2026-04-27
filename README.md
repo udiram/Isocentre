@@ -25,6 +25,7 @@ Set these environment variables in Railway:
 - `SECRET_KEY`
 - `ADMIN_PASSWORD`
 - `SITE_BASE_URL`
+- `GOOGLE_ANALYTICS_ID` (defaults to `G-KZ430V2G5C`)
 
 `DATABASE_URL` must point at the Railway Postgres service. If it is missing, the app refuses to boot on Railway instead of falling back to SQLite.
 
