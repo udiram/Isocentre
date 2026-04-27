@@ -26,6 +26,8 @@ Set these environment variables in Railway:
 - `ADMIN_PASSWORD`
 - `SITE_BASE_URL`
 
+`DATABASE_URL` must point at the Railway Postgres service. If it is missing, the app refuses to boot on Railway instead of falling back to SQLite.
+
 Community submissions and mentor messages use Isocentre's built-in notification inbox. SMTP is not required for the MVP.
 
 Railway can start the app with the included `Procfile`:

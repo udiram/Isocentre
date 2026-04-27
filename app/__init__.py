@@ -12,7 +12,10 @@ migrate = Migrate()
 def create_app(test_config=None):
     load_dotenv()
     app = Flask(__name__, instance_relative_config=True)
-    database_url = normalize_database_url(os.getenv("DATABASE_URL", "sqlite:///:memory:"))
+    raw_database_url = os.getenv("DATABASE_URL")
+    if is_railway_runtime() and (not raw_database_url or raw_database_url.startswith("sqlite")):
+        raise RuntimeError("DATABASE_URL must be set to Railway Postgres. Refusing to run Railway with SQLite.")
+    database_url = normalize_database_url(raw_database_url or "sqlite:///:memory:")
     resend_api_key = os.getenv("RESEND_API_KEY", "")
     engine_options = {}
     if database_url.startswith("postgresql"):
@@ -76,3 +79,7 @@ def normalize_database_url(url):
     if url.startswith("postgres://"):
         return url.replace("postgres://", "postgresql+psycopg://", 1)
     return url
+
+
+def is_railway_runtime():
+    return any(os.getenv(name) for name in ("RAILWAY_ENVIRONMENT", "RAILWAY_PROJECT_ID", "RAILWAY_SERVICE_ID"))
