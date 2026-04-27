@@ -123,6 +123,7 @@ a {
   justify-content: space-between;
   gap: 1rem;
   min-height: 74px;
+  width: min(1300px, calc(100% - 32px));
 }
 
 .brand {
@@ -173,6 +174,7 @@ a {
   font-weight: 650;
   padding: 0.55rem 0.7rem;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .nav-links a:hover {
@@ -218,6 +220,7 @@ a {
   min-height: 38px;
   padding: 0.35rem 0.75rem;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .notification-link {
@@ -354,6 +357,12 @@ h4 {
   color: var(--ink);
 }
 
+.button.danger {
+  background: rgba(163, 61, 61, 0.1);
+  border: 1px solid rgba(163, 61, 61, 0.28);
+  color: var(--red);
+}
+
 .hero-panel,
 .tool-panel,
 .result-panel,
@@ -481,6 +490,54 @@ h4 {
 .compact-row small,
 .flow-step,
 .dashboard-card p {
+  color: var(--muted);
+}
+
+.community-stats,
+.tag-cloud {
+  width: min(1160px, calc(100% - 32px));
+  margin: 1rem auto 0;
+}
+
+.community-stats {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.community-stats article {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.9rem;
+}
+
+.community-stats strong {
+  display: block;
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.community-stats span {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 750;
+}
+
+.community-playbook {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.community-playbook article {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.community-playbook p {
   color: var(--muted);
 }
 
@@ -1273,6 +1330,27 @@ h4 {
   max-width: 720px;
 }
 
+.section-heading.compact {
+  align-items: center;
+  margin-bottom: 0.7rem;
+}
+
+.section-heading.compact h2 {
+  font-size: 1.2rem;
+}
+
+.admin-panel-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 2rem auto 4rem;
+  width: min(1160px, calc(100% - 32px));
+}
+
+.admin-overview {
+  padding-top: 2rem;
+}
+
 .timeline {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1336,6 +1414,10 @@ h4 {
   gap: 0.9rem;
 }
 
+.mentor-grid {
+  align-items: stretch;
+}
+
 .guide-card,
 .course-card {
   color: inherit;
@@ -1351,6 +1433,78 @@ h4 {
   font-size: 0.75rem;
   font-weight: 850;
   margin-bottom: 0.6rem;
+}
+
+.mentor-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.mentor-card .cta-row {
+  margin-top: auto;
+}
+
+.mentor-card-top {
+  align-items: start;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.mentor-card-top em,
+.mentor-meta span,
+.mentor-tags a,
+.mentor-tags span,
+.tag-cloud a {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 800;
+  padding: 0.22rem 0.5rem;
+}
+
+.mentor-card-top em {
+  background: rgba(62, 124, 89, 0.1);
+  color: var(--green);
+  white-space: nowrap;
+}
+
+.mentor-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.75rem 0;
+}
+
+.mentor-tags a,
+.mentor-tags span,
+.tag-cloud a {
+  background: var(--paper);
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.mentor-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.mentor-meta span {
+  color: var(--muted);
+}
+
+.tag-cloud {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag-cloud strong {
+  margin-right: 0.2rem;
 }
 
 .course-strip {
@@ -1695,6 +1849,40 @@ textarea {
   resize: vertical;
 }
 
+.form-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.form-grid.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.danger-zone {
+  border-color: rgba(163, 61, 61, 0.35);
+  margin-top: 1rem;
+}
+
+.settings-block {
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+
+.settings-block:last-of-type {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.settings-block h2 {
+  font-size: 1.25rem;
+}
+
 .form-note {
   color: var(--muted);
   font-size: 0.9rem;
@@ -1835,6 +2023,10 @@ form.filter-bar {
   align-items: center;
 }
 
+form.filter-bar.mentor-filter {
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.7fr) 170px 170px auto auto;
+}
+
 .mini-tags {
   color: var(--blue);
   font-size: 0.85rem;
@@ -1880,6 +2072,10 @@ form.filter-bar {
 
 .notice-band.light span {
   color: var(--muted);
+}
+
+.notice-band.light a {
+  color: var(--maroon-dark);
 }
 
 .status-group {
@@ -2021,6 +2217,8 @@ form.filter-bar {
   .dashboard-grid,
   .status-board,
   .quick-flow,
+  .community-stats,
+  .community-playbook,
   .flow-grid,
   .roadmap-overview,
   .roadmap-columns,
@@ -2059,8 +2257,11 @@ form.filter-bar {
   .site-footer,
   .hero,
   .quick-flow,
+  .community-stats,
+  .tag-cloud,
   .dashboard-hero,
   .dashboard-grid,
+  .admin-panel-grid,
   .auth-shell,
   .search-results,
   .notification-layout,
@@ -2090,6 +2291,8 @@ form.filter-bar {
 
   .notice-band,
   .quick-flow,
+  .community-stats,
+  .community-playbook,
   .roadmap-overview,
   .roadmap-term-card,
   .roadmap-term-header,
@@ -2100,6 +2303,7 @@ form.filter-bar {
   .outreach-template,
   .guide-library,
   .dashboard-grid,
+  .admin-panel-grid,
   .status-board,
   .flow-grid,
   .planner-toolbar,
@@ -2109,11 +2313,14 @@ form.filter-bar {
   .hero-search,
   .filter-bar form,
   form.filter-bar,
+  form.filter-bar.mentor-filter,
   .timeline,
   .card-grid,
   .ratings-panel,
   .course-strip,
   .field-grid,
+  .form-grid.two,
+  .form-grid.three,
   .gpa-row {
     grid-template-columns: 1fr;
   }

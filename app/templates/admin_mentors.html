@@ -4,6 +4,11 @@
 <section class="page-hero">
   <p class="eyebrow">Admin</p>
   <h1>Mentor profiles</h1>
+  <p>Add directory entries, attach profiles to signed-in users for inbox messaging, and moderate student-submitted profiles.</p>
+  <div class="cta-row">
+    <a class="button primary" href="{{ url_for('main.admin_mentor_new') }}">Add profile</a>
+    <a class="button secondary" href="{{ url_for('main.admin') }}">Dashboard</a>
+  </div>
 </section>
 <form class="filter-bar" method="get">
   <label>Status
@@ -21,13 +26,26 @@
 <section class="admin-list">
   {% for mentor in mentors %}
     <article class="review-card">
-      <div class="rating-row"><small>{{ mentor.status }}</small><small>{{ mentor.private_email }}</small><small>{{ mentor.role_year }}</small><small>{{ "featured" if mentor.featured else "not featured" }}</small></div>
+      <div class="rating-row">
+        <small>{{ mentor.status }}</small>
+        <small>{{ mentor.private_email }}</small>
+        <small>{{ mentor.role_year }}</small>
+        <small>{{ "inbox attached" if mentor.user_id else "public contact only" }}</small>
+        <small>{{ "featured" if mentor.featured else "not featured" }}</small>
+      </div>
       <h3>{{ mentor.display_name }}</h3>
       <p>{{ mentor.bio }}</p>
       <p>{{ mentor.pathway_tags|tags }} · {{ mentor.experience_tags|tags }}</p>
+      {% if mentor.public_contact_text %}<p><strong>Public contact:</strong> {{ mentor.public_contact_text }}</p>{% endif %}
+      <div class="inline-actions">
+        <a class="button primary" href="{{ url_for('main.admin_mentor_edit', mentor_id=mentor.id) }}">Edit</a>
+      </div>
       {% for action,label in [("approve","Approve"),("reject","Reject"),("hide","Hide"),("feature","Feature"),("unfeature","Unfeature")] %}
         <form class="inline-actions" method="post" action="{{ url_for('main.admin_moderate', target_type='MentorProfile', target_id=mentor.id, action=action) }}"><button class="button {{ 'primary' if action == 'approve' else 'secondary' }}">{{ label }}</button></form>
       {% endfor %}
+      <form class="inline-actions" method="post" action="{{ url_for('main.admin_delete', target_type='MentorProfile', target_id=mentor.id) }}" onsubmit="return confirm('Delete this mentor profile and related mentor messages?');">
+        <button class="button danger">Delete</button>
+      </form>
     </article>
   {% else %}<p>No mentor profiles.</p>{% endfor %}
   {% if pagination and pagination.pages > 1 %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ "Add" if mode == "new" else "Edit" }} Mentor Profile | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell">
+  <div class="tool-header">
+    <p class="eyebrow">Admin directory</p>
+    <h1>{{ "Add mentor profile" if mode == "new" else "Edit mentor profile" }}</h1>
+    <p>Attach a profile to an existing user email when possible. Attached profiles can receive Isocentre inbox messages.</p>
+    <div class="cta-row">
+      <a class="button secondary" href="{{ url_for('main.admin_mentors', status='all') }}">Back to profiles</a>
+      <a class="button secondary" href="{{ url_for('main.admin') }}">Dashboard</a>
+    </div>
+  </div>
+
+  <form class="tool-panel narrow" method="post">
+    <div class="form-grid two">
+      <label>Attach owner account
+        <select name="owner_email">
+          <option value="">No attached account</option>
+          {% for user in users %}
+            <option value="{{ user.email }}" {% if mentor.user_id == user.id %}selected{% endif %}>{{ user.display_name }} · {{ user.email }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Private email
+        <input name="private_email" value="{{ mentor.private_email }}" placeholder="Used privately if no owner account">
+      </label>
+    </div>
+
+    <label>Display name
+      <input required name="display_name" value="{{ mentor.display_name }}" placeholder="First name, initials, or alias">
+    </label>
+    <label>Role/year
+      <input required name="role_year" value="{{ mentor.role_year }}" placeholder="Level III MedBioPhys, co-op student, alum, MSc student">
+    </label>
+    <div class="form-grid two">
+      <label>Pathway tags
+        <input name="pathway_tags" value="{{ mentor.pathway_tags|tags }}" placeholder="clinical medical physics, imaging AI, health physics">
+      </label>
+      <label>Experience tags
+        <input name="experience_tags" value="{{ mentor.experience_tags|tags }}" placeholder="research, co-op, NSERC USRA, thesis, CAMPEP apps">
+      </label>
+    </div>
+    <label>Bio
+      <textarea required name="bio" rows="7" placeholder="What can students ask this person about?">{{ mentor.bio }}</textarea>
+    </label>
+    <div class="form-grid two">
+      <label>Contact preference
+        <input name="contact_preference" value="{{ mentor.contact_preference }}" placeholder="Isocentre inbox, LinkedIn, email">
+      </label>
+      <label>Public contact text
+        <input name="public_contact_text" value="{{ mentor.public_contact_text }}" placeholder="Only what should be public">
+      </label>
+    </div>
+    <div class="form-grid three">
+      <label>Status
+        <select name="status">
+          {% for item in ["approved", "pending", "awaiting_verification", "rejected", "hidden"] %}
+            <option value="{{ item }}" {% if mentor.status == item %}selected{% endif %}>{{ item.replace("_", " ") }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Available for mentorship?
+        <select name="mentorship_available">
+          <option value="yes" {% if mentor.mentorship_available %}selected{% endif %}>Yes</option>
+          <option value="no" {% if not mentor.mentorship_available %}selected{% endif %}>Not right now</option>
+        </select>
+      </label>
+      <label>Featured?
+        <select name="featured">
+          <option value="no" {% if not mentor.featured %}selected{% endif %}>No</option>
+          <option value="yes" {% if mentor.featured %}selected{% endif %}>Yes</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button class="button primary" type="submit">{{ "Create profile" if mode == "new" else "Save changes" }}</button>
+      <a class="button secondary" href="{{ url_for('main.admin_mentors', status='all') }}">Cancel</a>
+    </div>
+  </form>
+
+  {% if mode == "edit" %}
+    <form class="tool-panel narrow danger-zone" method="post" action="{{ url_for('main.admin_delete', target_type='MentorProfile', target_id=mentor.id) }}" onsubmit="return confirm('Delete this mentor profile and related mentor messages?');">
+      <h2>Delete profile</h2>
+      <p>This removes the public profile and mentor messages associated with it. User accounts are not deleted.</p>
+      <button class="button danger" type="submit">Delete mentor profile</button>
+    </form>
+  {% endif %}
+</section>
+{% endblock %}

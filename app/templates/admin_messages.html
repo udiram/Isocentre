@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Admin Messages | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Admin</p>
+  <h1>Mentor messages</h1>
+  <p>Private mentor messages are shown here only for moderation and safety review. Do not expose message text publicly.</p>
+  <div class="cta-row"><a class="button secondary" href="{{ url_for('main.admin') }}">Dashboard</a></div>
+</section>
+
+<form class="filter-bar" method="get">
+  <label>Search
+    <input name="q" value="{{ query }}" placeholder="subject or body">
+  </label>
+  <button class="button secondary" type="submit">Filter</button>
+</form>
+
+<section class="admin-list">
+  {% for message in messages %}
+    <article class="review-card">
+      <div class="rating-row">
+        <small>{{ "read" if message.read_at else "unread" }}</small>
+        <small>{{ message.created_at.strftime("%Y-%m-%d") if message.created_at else "unknown date" }}</small>
+        <small>from {{ message.sender.email if message.sender else "unknown" }}</small>
+        <small>to {{ message.recipient.email if message.recipient else "unknown" }}</small>
+      </div>
+      <h3>{{ message.subject }}</h3>
+      <p>{{ message.body }}</p>
+      {% if message.mentor %}
+        <p><strong>Mentor profile:</strong> <a href="{{ url_for('main.admin_mentor_edit', mentor_id=message.mentor.id) }}">{{ message.mentor.display_name }}</a></p>
+      {% endif %}
+      <form class="inline-actions" method="post" action="{{ url_for('main.admin_delete', target_type='MentorMessage', target_id=message.id) }}" onsubmit="return confirm('Delete this mentor message?');">
+        <button class="button danger" type="submit">Delete message</button>
+      </form>
+    </article>
+  {% else %}
+    <p>No mentor messages found.</p>
+  {% endfor %}
+  {% if pagination and pagination.pages > 1 %}
+    <nav class="pagination" aria-label="Admin message pages">
+      {% if pagination.has_prev %}<a href="{{ url_for('main.admin_messages', q=query, page=pagination.prev_num) }}">Previous</a>{% endif %}
+      <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.has_next %}<a href="{{ url_for('main.admin_messages', q=query, page=pagination.next_num) }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

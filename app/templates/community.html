@@ -1,37 +1,128 @@
 {% extends "base.html" %}
 {% block title %}Community | Isocentre{% endblock %}
 {% block content %}
-<section class="page-hero">
+<section class="page-hero community-hero">
   <p class="eyebrow">Community</p>
-  <h1>Course reviews, mentor profiles, and upper-year questions.</h1>
-  <p>Public posts are moderated. Signed-in students get updates, mentor messages, and review activity through Isocentre notifications.</p>
+  <h1>Find the right person, ask a better question, leave useful course intel.</h1>
+  <p>Isocentre community tools are account-based, moderated, and built around practical student-to-student help: mentor DMs, upper-year question routing, and course reviews.</p>
   <div class="cta-row">
-    <a class="button primary" href="{{ url_for('main.submit_review') }}">Submit course review</a>
-    <a class="button secondary" href="{{ url_for('main.submit_mentor') }}">Join mentor directory</a>
+    <a class="button primary" href="{{ url_for('main.mentors') }}">Find a mentor</a>
     <a class="button secondary" href="{{ url_for('main.ask_upper_year') }}">Ask an upper-year</a>
+    <a class="button secondary" href="{{ url_for('main.submit_review') }}">Submit course review</a>
+    <a class="button secondary" href="{{ url_for('main.submit_mentor') }}">Join directory</a>
   </div>
 </section>
 
+<section class="community-stats" aria-label="Community snapshot">
+  <article><strong>{{ stats.available_mentors }}</strong><span>available mentors</span></article>
+  <article><strong>{{ stats.dm_mentors }}</strong><span>direct-messageable profiles</span></article>
+  <article><strong>{{ stats.reviews }}</strong><span>approved course reviews</span></article>
+  <article><strong>{{ upper_year_count if current_user else "Sign in" }}</strong><span>{{ "upper-years above your stage" if current_user else "for routed questions" }}</span></article>
+</section>
+
 <section class="quick-flow" aria-label="Community workflow">
-  <a href="{{ url_for('main.mentors') }}"><span>01</span><strong>Find people</strong><small>Filter mentors by pathway or experience</small></a>
-  <a href="{{ url_for('main.submit_review') }}"><span>02</span><strong>Leave course intel</strong><small>Difficulty, workload, usefulness, and advice</small></a>
-  <a href="{{ url_for('main.ask_upper_year') }}"><span>03</span><strong>Ask a question</strong><small>Private queue first, public only after moderation</small></a>
-  <a href="{{ url_for('main.page', slug='course-review-guidelines') }}"><span>04</span><strong>Moderation rules</strong><small>No private materials, no personal attacks</small></a>
+  <a href="{{ url_for('main.mentors') }}"><span>01</span><strong>Browse people</strong><small>Filter by pathway, experience, availability, and DM access</small></a>
+  <a href="{{ url_for('main.message_mentor', mentor_id=matching_mentors[0].id) if matching_mentors else url_for('main.mentors') }}"><span>02</span><strong>Send a focused DM</strong><small>Ask about decisions, timelines, research fit, or course planning</small></a>
+  <a href="{{ url_for('main.ask_upper_year') }}"><span>03</span><strong>Ask the cohort</strong><small>Your stage and goals are pulled from settings automatically</small></a>
+  <a href="{{ url_for('main.page', slug='course-review-guidelines') }}"><span>04</span><strong>Give back</strong><small>Reviews should be original, practical, and free of private materials</small></a>
+</section>
+
+{% if current_user %}
+  <section class="card-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">For you</p>
+        <h2>Good people to start with</h2>
+      </div>
+      <a class="button secondary" href="{{ url_for('main.account_settings') }}">Update interests</a>
+    </div>
+    <div class="card-grid mentor-grid">
+      {% for mentor in matching_mentors %}
+        <article class="guide-card mentor-card">
+          <div class="mentor-card-top">
+            <span>{{ mentor.role_year }}</span>
+            {% if mentor.mentorship_available %}<em>Available</em>{% else %}<em>Busy</em>{% endif %}
+          </div>
+          <h3>{{ mentor.display_name }}</h3>
+          <p>{{ mentor.bio }}</p>
+          <p class="mini-tags">{{ mentor.pathway_tags|tags }}</p>
+          <div class="cta-row">
+            {% if mentor.user_id %}
+              <a class="button primary" href="{{ url_for('main.message_mentor', mentor_id=mentor.id) }}">Direct message</a>
+            {% endif %}
+            <a class="button secondary" href="{{ url_for('main.mentors', tag=(mentor.pathway_tags[0] if mentor.pathway_tags else '')) }}">Similar mentors</a>
+          </div>
+        </article>
+      {% else %}
+        <article class="guide-card">
+          <span>Profile setup</span>
+          <h3>Add interests to unlock better matches</h3>
+          <p>Put clinical medical physics, imaging AI, co-op, health physics, research, or other goals in settings.</p>
+          <a class="button secondary" href="{{ url_for('main.account_settings') }}">Edit settings</a>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% else %}
+  <section class="notice-band light community-callout">
+    <strong>Sign in with your McMaster email for the useful parts.</strong>
+    <span>Accounts unlock direct mentor messages, routed upper-year questions, saved notifications, and personalized mentor matching.</span>
+    <a href="{{ url_for('main.register') }}">Create account</a>
+  </section>
+{% endif %}
+
+<section class="card-section muted">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Networking playbook</p>
+      <h2>How to get a response worth reading</h2>
+    </div>
+  </div>
+  <div class="community-playbook">
+    <article>
+      <h3>Ask one decision at a time</h3>
+      <p>“Should I prioritize NSERC USRA or co-op this winter?” is easier to answer than “tell me about research.”</p>
+    </article>
+    <article>
+      <h3>Give your context</h3>
+      <p>Mention your stage, courses taken, interests, and what you already tried. Settings now fills some of this in for upper-year questions.</p>
+    </article>
+    <article>
+      <h3>Use mentors for lived experience</h3>
+      <p>Ask about workflow, preparation, timelines, and tradeoffs. Confirm official requirements with advisors or official McMaster pages.</p>
+    </article>
+    <article>
+      <h3>Close the loop</h3>
+      <p>If advice helped, leave a course review or join the mentor directory later. The hub gets better when people add practical details.</p>
+    </article>
+  </div>
 </section>
 
 <section class="card-section">
   <div class="section-heading">
-    <p class="eyebrow">Networking</p>
-    <h2>Opt-in mentor directory</h2>
+    <div>
+      <p class="eyebrow">Directory</p>
+      <h2>Recently active mentor profiles</h2>
+    </div>
+    <a class="button secondary" href="{{ url_for('main.mentors') }}">Browse all</a>
   </div>
-  <div class="card-grid">
+  <div class="card-grid mentor-grid">
     {% for mentor in mentors %}
-      <article class="guide-card">
-        <span>{{ mentor.role_year }}</span>
+      <article class="guide-card mentor-card">
+        <div class="mentor-card-top">
+          <span>{{ mentor.role_year }}</span>
+          {% if mentor.user_id %}<em>DM open</em>{% else %}<em>Public contact</em>{% endif %}
+        </div>
         <h3>{{ mentor.display_name }}</h3>
         <p>{{ mentor.bio }}</p>
         <p class="mini-tags">{{ mentor.pathway_tags|tags }}</p>
         {% if mentor.public_contact_text %}<p><strong>Contact:</strong> {{ mentor.public_contact_text }}</p>{% endif %}
+        <div class="cta-row">
+          {% if mentor.user_id and (not current_user or current_user.id != mentor.user_id) %}
+            <a class="button primary" href="{{ url_for('main.message_mentor', mentor_id=mentor.id) }}">Direct message</a>
+          {% endif %}
+          <a class="button secondary" href="{{ url_for('main.mentors', tag=(mentor.pathway_tags[0] if mentor.pathway_tags else '')) }}">Filter tag</a>
+        </div>
       </article>
     {% else %}
       <article class="guide-card">
@@ -45,8 +136,11 @@
 
 <section class="card-section muted">
   <div class="section-heading">
-    <p class="eyebrow">Reviews</p>
-    <h2>Recent course intel</h2>
+    <div>
+      <p class="eyebrow">Reviews</p>
+      <h2>Recent course intel</h2>
+    </div>
+    <a class="button secondary" href="{{ url_for('main.courses') }}">Course guides</a>
   </div>
   <div class="card-grid">
     {% for review in recent_reviews %}
@@ -59,7 +153,7 @@
       <article class="guide-card">
         <span>Course intel</span>
         <h3>No approved reviews yet</h3>
-        <p>Submit a practical review about workload, preparation, and study strategy. Reviews stay private until verified and moderated.</p>
+        <p>Submit a practical review about workload, preparation, and study strategy. Reviews stay private until moderated.</p>
       </article>
     {% endfor %}
   </div>

@@ -4,6 +4,8 @@
 <section class="page-hero">
   <p class="eyebrow">Admin</p>
   <h1>Ask an upper-year queue</h1>
+  <p>Use this queue to triage private student questions. Mark handled when answered or routed to a mentor.</p>
+  <div class="cta-row"><a class="button secondary" href="{{ url_for('main.admin') }}">Dashboard</a></div>
 </section>
 <form class="filter-bar" method="get">
   <label>Status
@@ -27,6 +29,7 @@
       {% for action,label in [("approve","Mark handled"),("reject","Reject"),("hide","Hide")] %}
         <form class="inline-actions" method="post" action="{{ url_for('main.admin_moderate', target_type='QuestionSubmission', target_id=question.id, action=action) }}"><button class="button {{ 'primary' if action == 'approve' else 'secondary' }}">{{ label }}</button></form>
       {% endfor %}
+      <form class="inline-actions" method="post" action="{{ url_for('main.admin_delete', target_type='QuestionSubmission', target_id=question.id) }}" onsubmit="return confirm('Delete this question?');"><button class="button danger">Delete</button></form>
     </article>
   {% else %}<p>No questions.</p>{% endfor %}
   {% if pagination and pagination.pages > 1 %}

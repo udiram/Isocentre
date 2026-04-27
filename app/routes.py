@@ -339,6 +339,9 @@ def register():
     if not email or "@" not in email:
         flash("Enter a valid email address.", "error")
         return render_template("auth/register.html", stages=stage_names()), 400
+    if not is_mcmaster_email(email):
+        flash("Use your @mcmaster.ca email to create an Isocentre account.", "error")
+        return render_template("auth/register.html", stages=stage_names()), 400
     if len(password) < 8:
         flash("Use a password with at least 8 characters.", "error")
         return render_template("auth/register.html", stages=stage_names()), 400
@@ -427,12 +430,36 @@ def dashboard():
 @login_required
 def account_settings():
     user = current_user()
+    mentor = (
+        MentorProfile.query.filter_by(user_id=user.id)
+        .order_by(MentorProfile.updated_at.desc(), MentorProfile.created_at.desc())
+        .first()
+    )
     if request.method == "GET":
-        return render_template("auth/settings.html", user=user, stages=stage_names())
+        return render_template("auth/settings.html", user=user, stages=stage_names(), mentor=mentor)
     user.display_name = clean_text(request.form.get("display_name", user.display_name)) or user.display_name
-    user.stage = clean_text(request.form.get("stage", user.stage)) or user.stage
+    stage = clean_text(request.form.get("stage", user.stage)) or user.stage
+    user.stage = stage if stage in stage_names() else user.stage
     user.goal = clean_text(request.form.get("goal", user.goal))
     user.pathway_tags = split_tags(request.form.get("pathway_tags", ""))
+
+    if mentor and request.form.get("mentor_profile_present") == "yes":
+        mentor.role_year = clean_text(request.form.get("mentor_role_year", mentor.role_year))[:120] or mentor.role_year
+        mentor.pathway_tags = split_tags(request.form.get("mentor_pathway_tags", ""))
+        mentor.experience_tags = split_tags(request.form.get("mentor_experience_tags", ""))
+        mentor.bio = clean_text(request.form.get("mentor_bio", mentor.bio)) or mentor.bio
+        mentor.contact_preference = clean_text(request.form.get("mentor_contact_preference", mentor.contact_preference))[:120] or mentor.contact_preference
+        mentor.public_contact_text = clean_text(request.form.get("mentor_public_contact_text", mentor.public_contact_text))[:240]
+        mentor.mentorship_available = request.form.get("mentor_available", "yes") == "yes"
+        visibility = request.form.get("mentor_visibility", "visible")
+        if visibility == "hidden":
+            mentor.status = ModerationStatus.HIDDEN
+        elif mentor.status == ModerationStatus.HIDDEN:
+            mentor.status = ModerationStatus.PENDING
+            mentor.moderated_at = None
+        db.session.add(mentor)
+        public_cache.clear()
+
     db.session.commit()
     flash("Account settings updated.", "success")
     return redirect(url_for("main.dashboard"))
@@ -562,44 +589,70 @@ def message_detail(message_id):
 
 @bp.route("/community")
 def community():
+    user = current_user()
+    mentors_query = MentorProfile.query.filter_by(status=ModerationStatus.APPROVED)
     mentors = (
-        MentorProfile.query.filter_by(status=ModerationStatus.APPROVED)
-        .order_by(MentorProfile.featured.desc(), MentorProfile.updated_at.desc())
+        mentors_query
+        .order_by(MentorProfile.featured.desc(), MentorProfile.mentorship_available.desc(), MentorProfile.updated_at.desc())
         .limit(6)
         .all()
     )
+    matching_mentors = mentor_matches_for_user(user, limit=6) if user else []
+    stats = {
+        "mentors": mentors_query.count(),
+        "available_mentors": mentors_query.filter_by(mentorship_available=True).count(),
+        "dm_mentors": mentors_query.filter(MentorProfile.user_id.isnot(None)).count(),
+        "reviews": CourseReview.query.filter_by(status=ModerationStatus.APPROVED).count(),
+    }
     recent_reviews = (
         CourseReview.query.filter_by(status=ModerationStatus.APPROVED)
         .order_by(CourseReview.created_at.desc())
         .limit(6)
         .all()
     )
-    return render_template("community.html", mentors=mentors, recent_reviews=recent_reviews)
+    return render_template(
+        "community.html",
+        mentors=mentors,
+        matching_mentors=matching_mentors,
+        recent_reviews=recent_reviews,
+        stats=stats,
+        upper_year_count=len(higher_year_users(user)) if user else 0,
+    )
 
 
 @bp.route("/community/mentors")
 def mentors():
     tag = clean_text(request.args.get("tag", ""))
     query = clean_text(request.args.get("q", ""))
+    availability = clean_text(request.args.get("availability", "available"))
+    contact = clean_text(request.args.get("contact", "any"))
     page_number = bounded_int(request.args.get("page"), 1, 10000, 1)
-    mentor_query = MentorProfile.query.filter_by(status=ModerationStatus.APPROVED).order_by(
-        MentorProfile.featured.desc(), MentorProfile.updated_at.desc()
+    all_mentors = (
+        MentorProfile.query.filter_by(status=ModerationStatus.APPROVED)
+        .order_by(MentorProfile.featured.desc(), MentorProfile.mentorship_available.desc(), MentorProfile.updated_at.desc())
+        .all()
     )
-    if query:
-        like = f"%{query}%"
-        mentor_query = mentor_query.filter(
-            (MentorProfile.display_name.ilike(like)) | (MentorProfile.role_year.ilike(like)) | (MentorProfile.bio.ilike(like))
-        )
-    pagination = mentor_query.paginate(page=page_number, per_page=12, error_out=False)
-    mentors = pagination.items
-    if tag:
-        mentors = [mentor for mentor in mentors if tag in (mentor.pathway_tags or []) or tag in (mentor.experience_tags or [])]
-    return render_template("mentors.html", mentors=mentors, tag=tag, query=query, pagination=pagination)
+    mentors = filter_mentors(all_mentors, query=query, tag=tag, availability=availability, contact=contact)
+    pagination = paginate_list(mentors, page_number, 12)
+    suggested_tags = mentor_tag_cloud(all_mentors)
+    return render_template(
+        "mentors.html",
+        mentors=pagination.items,
+        tag=tag,
+        query=query,
+        availability=availability,
+        contact=contact,
+        pagination=pagination,
+        suggested_tags=suggested_tags,
+        total_matches=len(mentors),
+    )
 
 
 @bp.route("/community/ask")
+@login_required
 def ask_upper_year():
-    return render_template("ask.html")
+    user = current_user()
+    return render_template("ask.html", upper_year_count=len(higher_year_users(user)), sample_topics=question_starter_topics(user))
 
 
 @bp.route("/submit/review", methods=["GET", "POST"])
@@ -690,12 +743,16 @@ def submit_mentor():
 def submit_question():
     user = current_user()
     email = normalize_email(user.email)
+    body = clean_text(request.form.get("body", ""))
+    if not body:
+        flash("Write your question before sending it to upper-years.", "error")
+        return render_template("ask.html"), 400
 
     question = QuestionSubmission(
         user_id=user.id,
-        stage=clean_text(request.form.get("stage", "Not specified")),
+        stage=user.stage,
         topic=clean_text(request.form.get("topic", "General question")),
-        body=clean_text(request.form.get("body", "")),
+        body=body,
         private_email=email,
         email_hash=email_hash(email),
         status=ModerationStatus.PENDING,
@@ -711,9 +768,46 @@ def submit_question():
         target_type="QuestionSubmission",
         target_id=question.id,
     )
+    recipients = notify_higher_years(question, user)
     db.session.commit()
-    flash("Question submitted. You can watch for updates in notifications.", "success")
-    return redirect(url_for("main.community"))
+    flash(f"Question sent to {recipients} higher-year student{'s' if recipients != 1 else ''}. Replies appear in your notifications.", "success")
+    return redirect(url_for("main.question_detail", question_id=question.id))
+
+
+@bp.route("/community/ask/<int:question_id>", methods=["GET", "POST"])
+@login_required
+def question_detail(question_id):
+    user = current_user()
+    question = db.session.get(QuestionSubmission, question_id)
+    if not question:
+        abort(404)
+    if not can_view_question(user, question):
+        abort(403)
+
+    asker = question.user
+    if request.method == "POST":
+        if user.id == question.user_id:
+            flash("You cannot answer your own question.", "warning")
+            return redirect(url_for("main.question_detail", question_id=question.id))
+        response = clean_text(request.form.get("response", ""))
+        if not response:
+            flash("Write a response before sending it.", "error")
+            return render_template("question_detail.html", question=question, asker=asker, can_reply=True), 400
+        notify_user(
+            question.user_id,
+            "New upper-year response",
+            f"{user.display_name} ({user.stage}) replied to your question about {question.topic}: {response}",
+            "question-reply",
+            url_for("main.question_detail", question_id=question.id),
+            actor_label=user.display_name,
+            target_type="QuestionSubmission",
+            target_id=question.id,
+        )
+        db.session.commit()
+        flash("Response sent to the asker’s notifications.", "success")
+        return redirect(url_for("main.question_detail", question_id=question.id))
+
+    return render_template("question_detail.html", question=question, asker=asker, can_reply=user.id != question.user_id)
 
 
 @bp.route("/community/mentors/<int:mentor_id>/message", methods=["GET", "POST"])
@@ -789,12 +883,24 @@ def admin():
     if not is_admin():
         return render_template("admin_login.html")
     counts = {
-        "reviews": CourseReview.query.filter_by(status=ModerationStatus.PENDING).count(),
-        "mentors": MentorProfile.query.filter_by(status=ModerationStatus.PENDING).count(),
-        "questions": QuestionSubmission.query.filter_by(status=ModerationStatus.PENDING).count(),
+        "pending_reviews": CourseReview.query.filter_by(status=ModerationStatus.PENDING).count(),
+        "pending_mentors": MentorProfile.query.filter_by(status=ModerationStatus.PENDING).count(),
+        "pending_questions": QuestionSubmission.query.filter_by(status=ModerationStatus.PENDING).count(),
+        "approved_reviews": CourseReview.query.filter_by(status=ModerationStatus.APPROVED).count(),
+        "approved_mentors": MentorProfile.query.filter_by(status=ModerationStatus.APPROVED).count(),
+        "users": UserAccount.query.count(),
+        "messages": MentorMessage.query.count(),
+        "notifications": Notification.query.count(),
         "pages": Page.query.count(),
+        "courses": Course.query.count(),
     }
-    return render_template("admin.html", counts=counts)
+    recent = {
+        "reviews": CourseReview.query.order_by(CourseReview.created_at.desc()).limit(5).all(),
+        "mentors": MentorProfile.query.order_by(MentorProfile.created_at.desc()).limit(5).all(),
+        "questions": QuestionSubmission.query.order_by(QuestionSubmission.created_at.desc()).limit(5).all(),
+        "users": UserAccount.query.order_by(UserAccount.created_at.desc()).limit(5).all(),
+    }
+    return render_template("admin.html", counts=counts, recent=recent)
 
 
 @bp.route("/admin/logout")
@@ -839,6 +945,53 @@ def admin_mentors():
     return render_template("admin_mentors.html", mentors=pagination.items, pagination=pagination, status=status, query=query)
 
 
+@bp.route("/admin/mentors/new", methods=["GET", "POST"])
+def admin_mentor_new():
+    require_admin()
+    mentor = MentorProfile(
+        display_name="",
+        role_year="",
+        pathway_tags=[],
+        experience_tags=[],
+        bio="",
+        contact_preference="Isocentre inbox",
+        public_contact_text="",
+        private_email="",
+        email_hash="",
+        status=ModerationStatus.APPROVED,
+        mentorship_available=True,
+        featured=False,
+    )
+    if request.method == "POST":
+        if save_admin_mentor_form(mentor):
+            db.session.add(mentor)
+            db.session.flush()
+            db.session.add(AdminAuditLog(action="create", target_type="MentorProfile", target_id=mentor.id))
+            db.session.commit()
+            public_cache.clear()
+            flash("Mentor profile created.", "success")
+            return redirect(url_for("main.admin_mentors", status="all"))
+        db.session.rollback()
+    return render_template("admin_mentor_form.html", mentor=mentor, mode="new", users=mentor_owner_options())
+
+
+@bp.route("/admin/mentors/<int:mentor_id>/edit", methods=["GET", "POST"])
+def admin_mentor_edit(mentor_id):
+    require_admin()
+    mentor = db.session.get(MentorProfile, mentor_id)
+    if not mentor:
+        abort(404)
+    if request.method == "POST":
+        if save_admin_mentor_form(mentor):
+            db.session.add(AdminAuditLog(action="edit", target_type="MentorProfile", target_id=mentor.id))
+            db.session.commit()
+            public_cache.clear()
+            flash("Mentor profile updated.", "success")
+            return redirect(url_for("main.admin_mentors", status="all", q=mentor.display_name))
+        db.session.rollback()
+    return render_template("admin_mentor_form.html", mentor=mentor, mode="edit", users=mentor_owner_options())
+
+
 @bp.route("/admin/questions")
 def admin_questions():
     require_admin()
@@ -857,6 +1010,34 @@ def admin_questions():
         page=page_number, per_page=25, error_out=False
     )
     return render_template("admin_questions.html", questions=pagination.items, pagination=pagination, status=status, query=query)
+
+
+@bp.route("/admin/users")
+def admin_users():
+    require_admin()
+    query = clean_text(request.args.get("q", ""))
+    page_number = bounded_int(request.args.get("page"), 1, 10000, 1)
+    user_query = UserAccount.query
+    if query:
+        like = f"%{query}%"
+        user_query = user_query.filter(
+            or_(UserAccount.email.ilike(like), UserAccount.display_name.ilike(like), UserAccount.stage.ilike(like), UserAccount.goal.ilike(like))
+        )
+    pagination = user_query.order_by(UserAccount.created_at.desc()).paginate(page=page_number, per_page=30, error_out=False)
+    return render_template("admin_users.html", users=pagination.items, pagination=pagination, query=query)
+
+
+@bp.route("/admin/messages")
+def admin_messages():
+    require_admin()
+    query = clean_text(request.args.get("q", ""))
+    page_number = bounded_int(request.args.get("page"), 1, 10000, 1)
+    message_query = MentorMessage.query
+    if query:
+        like = f"%{query}%"
+        message_query = message_query.filter(or_(MentorMessage.subject.ilike(like), MentorMessage.body.ilike(like)))
+    pagination = message_query.order_by(MentorMessage.created_at.desc()).paginate(page=page_number, per_page=30, error_out=False)
+    return render_template("admin_messages.html", messages=pagination.items, pagination=pagination, query=query)
 
 
 @bp.route("/admin/pages")
@@ -891,6 +1072,48 @@ def admin_moderate(target_type, target_id, action):
         notify_course_review_followers(target)
     db.session.commit()
     public_cache.clear()
+    return redirect(request.referrer or url_for("main.admin"))
+
+
+@bp.route("/admin/delete/<target_type>/<int:target_id>", methods=["POST"])
+def admin_delete(target_type, target_id):
+    require_admin()
+    if target_type == "UserAccount":
+        target = db.session.get(UserAccount, target_id)
+        if not target:
+            abort(404)
+        delete_user_account(target)
+        db.session.commit()
+        public_cache.clear()
+        flash("User account and related community activity deleted.", "success")
+        return redirect(request.referrer or url_for("main.admin_users"))
+    if target_type == "MentorMessage":
+        target = db.session.get(MentorMessage, target_id)
+        if not target:
+            abort(404)
+        delete_mentor_message(target)
+        db.session.commit()
+        flash("Mentor message deleted.", "success")
+        return redirect(request.referrer or url_for("main.admin_messages"))
+    if target_type == "MentorProfile":
+        target = db.session.get(MentorProfile, target_id)
+        if not target:
+            abort(404)
+        message_ids = [row.id for row in MentorMessage.query.with_entities(MentorMessage.id).filter_by(mentor_id=target.id).all()]
+        if message_ids:
+            Notification.query.filter(Notification.target_type == "MentorMessage", Notification.target_id.in_(message_ids)).delete(
+                synchronize_session=False
+            )
+        MentorMessage.query.filter_by(mentor_id=target.id).delete(synchronize_session=False)
+    else:
+        target = get_moderated_target(target_type, target_id)
+
+    Notification.query.filter_by(target_type=target_type, target_id=target_id).delete(synchronize_session=False)
+    db.session.add(AdminAuditLog(action="delete", target_type=target_type, target_id=target_id, detail=getattr(target, "display_name", "")))
+    db.session.delete(target)
+    db.session.commit()
+    public_cache.clear()
+    flash(f"{labelize(target_type)} deleted.", "success")
     return redirect(request.referrer or url_for("main.admin"))
 
 
@@ -1645,6 +1868,247 @@ def notify_course_review_followers(review):
             target_type="CourseReview",
             target_id=review.id,
         )
+
+
+def notify_higher_years(question, asker):
+    recipients = higher_year_users(asker)
+    for recipient in recipients:
+        profile_bits = [asker.stage]
+        if asker.goal:
+            profile_bits.append(asker.goal)
+        if asker.pathway_tags:
+            profile_bits.append(", ".join(asker.pathway_tags))
+        notify_user(
+            recipient.id,
+            "New upper-year question",
+            f"{asker.display_name} ({'; '.join(profile_bits)}) asked about {question.topic}.",
+            "upper-year-question",
+            url_for("main.question_detail", question_id=question.id),
+            actor_label=asker.display_name,
+            target_type="QuestionSubmission",
+            target_id=question.id,
+        )
+    return len(recipients)
+
+
+class ListPagination:
+    def __init__(self, items, page, per_page, total):
+        self.items = items
+        self.page = page
+        self.per_page = per_page
+        self.total = total
+        self.pages = max(1, (total + per_page - 1) // per_page) if total else 0
+        self.has_prev = page > 1
+        self.has_next = self.pages > page
+        self.prev_num = page - 1
+        self.next_num = page + 1
+
+
+def paginate_list(items, page, per_page):
+    total = len(items)
+    pages = max(1, (total + per_page - 1) // per_page) if total else 1
+    page = min(page, pages)
+    start = (page - 1) * per_page
+    return ListPagination(items[start : start + per_page], page, per_page, total)
+
+
+def filter_mentors(mentors, query="", tag="", availability="available", contact="any"):
+    query = clean_text(query).lower()
+    tag = clean_text(tag).lower()
+    filtered = []
+    for mentor in mentors:
+        tags = [str(item).lower() for item in (mentor.pathway_tags or []) + (mentor.experience_tags or [])]
+        haystack = " ".join(
+            [
+                mentor.display_name or "",
+                mentor.role_year or "",
+                mentor.bio or "",
+                mentor.contact_preference or "",
+                mentor.public_contact_text or "",
+                " ".join(tags),
+            ]
+        ).lower()
+        if query and query not in haystack:
+            continue
+        if tag and tag not in tags and tag not in haystack:
+            continue
+        if availability == "available" and not mentor.mentorship_available:
+            continue
+        if availability == "unavailable" and mentor.mentorship_available:
+            continue
+        if contact == "dm" and not mentor.user_id:
+            continue
+        if contact == "public" and mentor.user_id:
+            continue
+        filtered.append(mentor)
+    return filtered
+
+
+def mentor_matches_for_user(user, limit=6):
+    if not user:
+        return []
+    mentors = (
+        MentorProfile.query.filter_by(status=ModerationStatus.APPROVED)
+        .filter(or_(MentorProfile.user_id.is_(None), MentorProfile.user_id != user.id))
+        .order_by(MentorProfile.featured.desc(), MentorProfile.mentorship_available.desc(), MentorProfile.updated_at.desc())
+        .all()
+    )
+    interests = {str(item).lower() for item in user.pathway_tags or []}
+    scored = []
+    for mentor in mentors:
+        tags = {str(item).lower() for item in (mentor.pathway_tags or []) + (mentor.experience_tags or [])}
+        score = len(interests & tags)
+        if mentor.mentorship_available:
+            score += 2
+        if mentor.user_id:
+            score += 1
+        if mentor.featured:
+            score += 1
+        scored.append((score, mentor))
+    scored.sort(key=lambda item: item[0], reverse=True)
+    return [mentor for _, mentor in scored[:limit]]
+
+
+def mentor_tag_cloud(mentors):
+    counts = defaultdict(int)
+    for mentor in mentors:
+        for tag in (mentor.pathway_tags or []) + (mentor.experience_tags or []):
+            cleaned = clean_text(tag)
+            if cleaned:
+                counts[cleaned] += 1
+    return [tag for tag, _ in sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:16]]
+
+
+def question_starter_topics(user):
+    base = [
+        "Choosing Level II courses",
+        "Finding research or NSERC USRA",
+        "Preparing for PHYSICS 2B03 / 2C03",
+        "Co-op applications",
+        "Clinical medical physics path",
+        "Grad school and CAMPEP",
+    ]
+    if user and user.pathway_tags:
+        return [f"{tag} pathway advice" for tag in user.pathway_tags[:3]] + base
+    return base
+
+
+def higher_year_users(asker):
+    asker_rank = stage_rank(asker.stage)
+    if asker_rank < 0:
+        return []
+    users = (
+        UserAccount.query.filter(UserAccount.id != asker.id)
+        .order_by(UserAccount.stage, UserAccount.display_name)
+        .all()
+    )
+    return [user for user in users if stage_rank(user.stage) > asker_rank]
+
+
+def can_view_question(user, question):
+    if is_admin() or user.id == question.user_id:
+        return True
+    return stage_rank(user.stage) > stage_rank(question.stage)
+
+
+def stage_rank(stage):
+    ranks = {
+        "Prospective": 0,
+        "Level I": 1,
+        "Level II": 2,
+        "Upper-year": 3,
+        "Graduating": 4,
+        "Alumni": 5,
+    }
+    return ranks.get(clean_text(stage), -1)
+
+
+def mentor_owner_options():
+    return UserAccount.query.order_by(UserAccount.display_name, UserAccount.email).limit(200).all()
+
+
+def save_admin_mentor_form(mentor):
+    owner_email = normalize_email(request.form.get("owner_email", ""))
+    private_email = normalize_email(request.form.get("private_email", ""))
+    owner = UserAccount.query.filter_by(email=owner_email).first() if owner_email else None
+    effective_email = owner.email if owner else private_email
+    if not effective_email:
+        flash("Add a private email or attach the profile to an existing user account.", "error")
+        return False
+    if owner_email and not owner:
+        flash("No user account exists for that owner email. Leave owner blank or create the account first.", "error")
+        return False
+
+    mentor.user_id = owner.id if owner else None
+    mentor.display_name = clean_text(request.form.get("display_name"))[:120]
+    mentor.role_year = clean_text(request.form.get("role_year"))[:120]
+    mentor.pathway_tags = split_tags(request.form.get("pathway_tags", ""))
+    mentor.experience_tags = split_tags(request.form.get("experience_tags", ""))
+    mentor.bio = clean_text(request.form.get("bio"))
+    mentor.contact_preference = clean_text(request.form.get("contact_preference"))[:120] or "Isocentre inbox"
+    mentor.public_contact_text = clean_text(request.form.get("public_contact_text"))[:240]
+    mentor.private_email = effective_email
+    mentor.email_hash = email_hash(effective_email)
+    mentor.status = clean_text(request.form.get("status")) or ModerationStatus.APPROVED
+    if mentor.status not in {
+        ModerationStatus.AWAITING_VERIFICATION,
+        ModerationStatus.PENDING,
+        ModerationStatus.APPROVED,
+        ModerationStatus.REJECTED,
+        ModerationStatus.HIDDEN,
+    }:
+        mentor.status = ModerationStatus.APPROVED
+    mentor.mentorship_available = request.form.get("mentorship_available", "yes") == "yes"
+    mentor.featured = request.form.get("featured", "no") == "yes"
+
+    if not mentor.display_name or not mentor.role_year or not mentor.bio:
+        flash("Display name, role/year, and bio are required.", "error")
+        return False
+    if mentor.status in {ModerationStatus.PENDING, ModerationStatus.APPROVED} and not mentor.verified_at:
+        mentor.verified_at = datetime.now(timezone.utc)
+    mentor.moderated_at = datetime.now(timezone.utc)
+    return True
+
+
+def delete_mentor_message(message):
+    Notification.query.filter_by(target_type="MentorMessage", target_id=message.id).delete(synchronize_session=False)
+    db.session.add(AdminAuditLog(action="delete", target_type="MentorMessage", target_id=message.id, detail=message.subject))
+    db.session.delete(message)
+
+
+def delete_user_account(user):
+    mentor_ids = [row.id for row in MentorProfile.query.with_entities(MentorProfile.id).filter_by(user_id=user.id).all()]
+    message_query = MentorMessage.query.filter(or_(MentorMessage.sender_id == user.id, MentorMessage.recipient_id == user.id))
+    if mentor_ids:
+        message_query = message_query.union(MentorMessage.query.filter(MentorMessage.mentor_id.in_(mentor_ids)))
+    message_ids = [message.id for message in message_query.all()]
+    if message_ids:
+        Notification.query.filter(Notification.target_type == "MentorMessage", Notification.target_id.in_(message_ids)).delete(
+            synchronize_session=False
+        )
+        MentorMessage.query.filter(MentorMessage.id.in_(message_ids)).delete(synchronize_session=False)
+
+    if mentor_ids:
+        Notification.query.filter(Notification.target_type == "MentorProfile", Notification.target_id.in_(mentor_ids)).delete(synchronize_session=False)
+        MentorProfile.query.filter(MentorProfile.id.in_(mentor_ids)).delete(synchronize_session=False)
+
+    review_ids = [row.id for row in CourseReview.query.with_entities(CourseReview.id).filter_by(user_id=user.id).all()]
+    if review_ids:
+        Notification.query.filter(Notification.target_type == "CourseReview", Notification.target_id.in_(review_ids)).delete(synchronize_session=False)
+        CourseReview.query.filter(CourseReview.id.in_(review_ids)).delete(synchronize_session=False)
+
+    question_ids = [row.id for row in QuestionSubmission.query.with_entities(QuestionSubmission.id).filter_by(user_id=user.id).all()]
+    if question_ids:
+        Notification.query.filter(Notification.target_type == "QuestionSubmission", Notification.target_id.in_(question_ids)).delete(
+            synchronize_session=False
+        )
+        QuestionSubmission.query.filter(QuestionSubmission.id.in_(question_ids)).delete(synchronize_session=False)
+
+    UserCourseStatus.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+    UserSavedGuide.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+    Notification.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+    db.session.add(AdminAuditLog(action="delete", target_type="UserAccount", target_id=user.id, detail=user.email))
+    db.session.delete(user)
 
 
 def require_admin():

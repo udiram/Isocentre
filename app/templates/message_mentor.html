@@ -7,19 +7,37 @@
     <h1>Message {{ mentor.display_name }}.</h1>
     <p>{{ mentor.role_year }} · {{ mentor.pathway_tags|tags }}</p>
   </div>
-  <form class="tool-panel narrow" method="post">
-    <div class="submission-identity">
-      <strong>Sending as {{ current_user.display_name }}</strong>
-      <span>The message stays inside Isocentre. The mentor will get an inbox notification.</span>
-    </div>
-    <label>Subject
-      <input name="subject" required maxlength="180" placeholder="Question about Level II research / co-op / CAMPEP">
-    </label>
-    <label>Message
-      <textarea name="body" required rows="8" placeholder="Be specific: your stage, what you are deciding, and what kind of advice would help."></textarea>
-    </label>
-    <p class="form-note">Keep it respectful and practical. Do not ask for private course materials or assignment help.</p>
-    <button class="button primary" type="submit">Send message</button>
-  </form>
+  <div class="content-split align-start">
+    <form class="tool-panel" method="post">
+      <div class="submission-identity">
+        <strong>Sending as {{ current_user.display_name }} · {{ current_user.stage }}</strong>
+        <span>The message stays inside Isocentre. The mentor will get an inbox notification.</span>
+        {% if current_user.goal %}<span>Your goal: {{ current_user.goal }}</span>{% endif %}
+      </div>
+      <label>Subject
+        <input name="subject" required maxlength="180" placeholder="Question about Level II research / co-op / CAMPEP">
+      </label>
+      <label>Message
+        <textarea name="body" required rows="9" placeholder="Be specific: your stage, what you are deciding, what you already tried, and what kind of advice would help."></textarea>
+      </label>
+      <p class="form-note">Keep it respectful and practical. Do not ask for private course materials or assignment help.</p>
+      <button class="button primary" type="submit">Send message</button>
+    </form>
+
+    <aside class="aside-box mentor-dm-panel">
+      <p class="eyebrow">Mentor context</p>
+      <h2>{{ mentor.display_name }}</h2>
+      <p>{{ mentor.bio }}</p>
+      <p><strong>Pathways:</strong> {{ mentor.pathway_tags|tags }}</p>
+      <p><strong>Experience:</strong> {{ mentor.experience_tags|tags }}</p>
+      <p><strong>Contact preference:</strong> {{ mentor.contact_preference }}</p>
+      <h3>Good DM prompts</h3>
+      <ul>
+        <li>“I am deciding between research and co-op this term. What would you prioritize?”</li>
+        <li>“What should I do before emailing supervisors in this area?”</li>
+        <li>“What surprised you about this pathway after Level II?”</li>
+      </ul>
+    </aside>
+  </div>
 </section>
 {% endblock %}

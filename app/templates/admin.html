@@ -1,16 +1,112 @@
 {% extends "base.html" %}
-{% block title %}Admin | Isocentre{% endblock %}
+{% block title %}Admin Dashboard | Isocentre{% endblock %}
 {% block content %}
 <section class="page-hero">
   <p class="eyebrow">Admin</p>
-  <h1>Moderation dashboard</h1>
-  <p>Approve verified submissions, inspect content coverage, and keep public community features clean.</p>
+  <h1>Isocentre control room</h1>
+  <p>Moderate community submissions, manage the mentor directory, inspect accounts and messages, and check seeded content coverage.</p>
   <div class="cta-row">
-    <a class="button primary" href="{{ url_for('main.admin_reviews') }}">Reviews ({{ counts.reviews }})</a>
-    <a class="button secondary" href="{{ url_for('main.admin_mentors') }}">Mentors ({{ counts.mentors }})</a>
-    <a class="button secondary" href="{{ url_for('main.admin_questions') }}">Questions ({{ counts.questions }})</a>
+    <a class="button primary" href="{{ url_for('main.admin_mentor_new') }}">Add mentor profile</a>
+    <a class="button secondary" href="{{ url_for('main.admin_reviews') }}">Review queue</a>
+    <a class="button secondary" href="{{ url_for('main.admin_mentors') }}">Mentor directory</a>
+    <a class="button secondary" href="{{ url_for('main.admin_questions') }}">Questions</a>
+    <a class="button secondary" href="{{ url_for('main.admin_users') }}">Users</a>
+    <a class="button secondary" href="{{ url_for('main.admin_messages') }}">Messages</a>
     <a class="button secondary" href="{{ url_for('main.admin_pages') }}">Content</a>
-    <a class="button secondary" href="{{ url_for('main.admin_logout') }}">Log out</a>
+    <a class="button ghost" href="{{ url_for('main.admin_logout') }}">Log out</a>
   </div>
+</section>
+
+<section class="dashboard-grid admin-overview" aria-label="Admin summary">
+  <article class="dashboard-card">
+    <span>Pending moderation</span>
+    <h2>{{ counts.pending_reviews + counts.pending_mentors + counts.pending_questions }}</h2>
+    <p>{{ counts.pending_reviews }} reviews, {{ counts.pending_mentors }} mentors, {{ counts.pending_questions }} questions need a decision.</p>
+  </article>
+  <article class="dashboard-card">
+    <span>Community</span>
+    <h2>{{ counts.users }}</h2>
+    <p>{{ counts.approved_mentors }} approved mentors, {{ counts.messages }} mentor messages, {{ counts.notifications }} notifications.</p>
+  </article>
+  <article class="dashboard-card">
+    <span>Public content</span>
+    <h2>{{ counts.pages + counts.courses }}</h2>
+    <p>{{ counts.pages }} guide pages and {{ counts.courses }} course pages are available from the database.</p>
+  </article>
+  <article class="dashboard-card">
+    <span>Quick maintenance</span>
+    <h2>Queues</h2>
+    <p>Use approve for publishable submissions, hide for temporary removal, reject for unsuitable content, and delete for cleanup.</p>
+  </article>
+</section>
+
+<section class="admin-panel-grid">
+  <article class="resource-group">
+    <div class="section-heading compact">
+      <div>
+        <p class="eyebrow">Recent</p>
+        <h2>Course reviews</h2>
+      </div>
+      <a href="{{ url_for('main.admin_reviews', status='all') }}">View all</a>
+    </div>
+    {% for review in recent.reviews %}
+      <a class="resource-row" href="{{ url_for('main.admin_reviews', status='all', q=review.course.code) }}">
+        <span><strong>{{ review.course.code }}</strong><small>{{ review.status }} · {{ review.term_taken }}</small></span><em>Open</em>
+      </a>
+    {% else %}
+      <p>No course reviews yet.</p>
+    {% endfor %}
+  </article>
+
+  <article class="resource-group">
+    <div class="section-heading compact">
+      <div>
+        <p class="eyebrow">Directory</p>
+        <h2>Mentor profiles</h2>
+      </div>
+      <a href="{{ url_for('main.admin_mentors', status='all') }}">View all</a>
+    </div>
+    {% for mentor in recent.mentors %}
+      <a class="resource-row" href="{{ url_for('main.admin_mentor_edit', mentor_id=mentor.id) }}">
+        <span><strong>{{ mentor.display_name }}</strong><small>{{ mentor.status }} · {{ mentor.role_year }}</small></span><em>Edit</em>
+      </a>
+    {% else %}
+      <p>No mentor profiles yet.</p>
+    {% endfor %}
+  </article>
+
+  <article class="resource-group">
+    <div class="section-heading compact">
+      <div>
+        <p class="eyebrow">Students</p>
+        <h2>New accounts</h2>
+      </div>
+      <a href="{{ url_for('main.admin_users') }}">View all</a>
+    </div>
+    {% for user in recent.users %}
+      <a class="resource-row" href="{{ url_for('main.admin_users', q=user.email) }}">
+        <span><strong>{{ user.display_name }}</strong><small>{{ user.email }} · {{ user.stage }}</small></span><em>Inspect</em>
+      </a>
+    {% else %}
+      <p>No user accounts yet.</p>
+    {% endfor %}
+  </article>
+
+  <article class="resource-group">
+    <div class="section-heading compact">
+      <div>
+        <p class="eyebrow">Ask queue</p>
+        <h2>Upper-year questions</h2>
+      </div>
+      <a href="{{ url_for('main.admin_questions', status='all') }}">View all</a>
+    </div>
+    {% for question in recent.questions %}
+      <a class="resource-row" href="{{ url_for('main.admin_questions', status='all', q=question.topic) }}">
+        <span><strong>{{ question.topic }}</strong><small>{{ question.status }} · {{ question.stage }}</small></span><em>Open</em>
+      </a>
+    {% else %}
+      <p>No student questions yet.</p>
+    {% endfor %}
+  </article>
 </section>
 {% endblock %}

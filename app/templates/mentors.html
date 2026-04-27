@@ -3,48 +3,105 @@
 {% block content %}
 <section class="page-hero">
   <p class="eyebrow">Opt-in directory</p>
-  <h1>Find students and alumni by pathway, experience, and contact preference.</h1>
-  <p>Profiles are public only after McMaster email verification and moderation.</p>
+  <h1>Find students and alumni by pathway, experience, availability, and DM access.</h1>
+  <p>Use this like a practical networking map: find someone near the path you are considering, send a focused message, and keep private contact details inside Isocentre.</p>
   <div class="cta-row">
     <a class="button primary" href="{{ url_for('main.submit_mentor') }}">Add profile</a>
+    <a class="button secondary" href="{{ url_for('main.ask_upper_year') }}">Ask upper-years</a>
     <a class="button secondary" href="{{ url_for('main.community') }}">Community hub</a>
   </div>
 </section>
 
-<form class="filter-bar" method="get">
+<form class="filter-bar mentor-filter" method="get">
   <label>Search
     <input name="q" value="{{ query }}" placeholder="imaging, CAMPEP, co-op, thesis">
   </label>
   <label>Tag
     <input name="tag" value="{{ tag }}" placeholder="clinical medical physics">
   </label>
+  <label>Availability
+    <select name="availability">
+      <option value="available" {% if availability == "available" %}selected{% endif %}>Available now</option>
+      <option value="any" {% if availability == "any" %}selected{% endif %}>Any status</option>
+      <option value="unavailable" {% if availability == "unavailable" %}selected{% endif %}>Busy profiles</option>
+    </select>
+  </label>
+  <label>Contact
+    <select name="contact">
+      <option value="any" {% if contact == "any" %}selected{% endif %}>Any contact</option>
+      <option value="dm" {% if contact == "dm" %}selected{% endif %}>Direct message</option>
+      <option value="public" {% if contact == "public" %}selected{% endif %}>Public contact only</option>
+    </select>
+  </label>
   <button class="button secondary" type="submit">Filter</button>
   <a class="button ghost" href="{{ url_for('main.mentors') }}">Reset</a>
 </form>
 
+{% if suggested_tags %}
+  <section class="tag-cloud" aria-label="Popular mentor tags">
+    <strong>Popular tags</strong>
+    {% for item in suggested_tags %}
+      <a href="{{ url_for('main.mentors', tag=item, availability=availability, contact=contact) }}">{{ item }}</a>
+    {% endfor %}
+  </section>
+{% endif %}
+
 <section class="card-section">
-  <div class="card-grid">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Results</p>
+      <h2>{{ total_matches }} mentor profile{{ "" if total_matches == 1 else "s" }} found</h2>
+    </div>
+    {% if current_user %}
+      <a class="button secondary" href="{{ url_for('main.account_settings') }}">Update my interests</a>
+    {% endif %}
+  </div>
+  <div class="card-grid mentor-grid">
     {% for mentor in mentors %}
-      <article class="guide-card">
-        <span>{{ mentor.role_year }}</span>
+      <article class="guide-card mentor-card">
+        <div class="mentor-card-top">
+          <span>{{ mentor.role_year }}</span>
+          {% if mentor.mentorship_available %}<em>Available</em>{% else %}<em>Busy</em>{% endif %}
+        </div>
         <h3>{{ mentor.display_name }}</h3>
         <p>{{ mentor.bio }}</p>
-        <p><strong>Pathways:</strong> {{ mentor.pathway_tags|tags }}</p>
-        <p><strong>Experience:</strong> {{ mentor.experience_tags|tags }}</p>
-        <p><strong>Contact:</strong> {{ mentor.public_contact_text or mentor.contact_preference }}</p>
-        {% if mentor.user_id and (not current_user or current_user.id != mentor.user_id) %}
-          <a class="button secondary" href="{{ url_for('main.message_mentor', mentor_id=mentor.id) }}">Message mentor</a>
-        {% endif %}
+        <div class="mentor-tags">
+          {% for item in mentor.pathway_tags %}
+            <a href="{{ url_for('main.mentors', tag=item, availability=availability, contact=contact) }}">{{ item }}</a>
+          {% endfor %}
+          {% for item in mentor.experience_tags %}
+            <a href="{{ url_for('main.mentors', tag=item, availability=availability, contact=contact) }}">{{ item }}</a>
+          {% endfor %}
+        </div>
+        <div class="mentor-meta">
+          <span>{{ "DM available" if mentor.user_id else "Public contact only" }}</span>
+          <span>{{ mentor.contact_preference }}</span>
+        </div>
+        {% if mentor.public_contact_text %}<p><strong>Public contact:</strong> {{ mentor.public_contact_text }}</p>{% endif %}
+        <div class="cta-row">
+          {% if mentor.user_id and (not current_user or current_user.id != mentor.user_id) %}
+            <a class="button primary" href="{{ url_for('main.message_mentor', mentor_id=mentor.id) }}">Direct message</a>
+          {% elif mentor.user_id and current_user and current_user.id == mentor.user_id %}
+            <a class="button secondary" href="{{ url_for('main.messages') }}">Your inbox</a>
+            <a class="button secondary" href="{{ url_for('main.account_settings') }}">Edit profile</a>
+          {% else %}
+            <span class="button secondary" aria-disabled="true">Public contact only</span>
+          {% endif %}
+        </div>
       </article>
     {% else %}
-      <p>No approved mentor profiles yet.</p>
+      <article class="guide-card">
+        <span>No matches</span>
+        <h3>Try broader filters</h3>
+        <p>Remove the tag, include busy profiles, or search for a broader area like research, co-op, imaging, thesis, or CAMPEP.</p>
+      </article>
     {% endfor %}
   </div>
   {% if pagination and pagination.pages > 1 %}
     <nav class="pagination" aria-label="Mentor pages">
-      {% if pagination.has_prev %}<a href="{{ url_for('main.mentors', q=query, tag=tag, page=pagination.prev_num) }}">Previous</a>{% endif %}
+      {% if pagination.has_prev %}<a href="{{ url_for('main.mentors', q=query, tag=tag, availability=availability, contact=contact, page=pagination.prev_num) }}">Previous</a>{% endif %}
       <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
-      {% if pagination.has_next %}<a href="{{ url_for('main.mentors', q=query, tag=tag, page=pagination.next_num) }}">Next</a>{% endif %}
+      {% if pagination.has_next %}<a href="{{ url_for('main.mentors', q=query, tag=tag, availability=availability, contact=contact, page=pagination.next_num) }}">Next</a>{% endif %}
     </nav>
   {% endif %}
 </section>

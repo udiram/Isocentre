@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Upper-Year Question | Isocentre{% endblock %}
+{% block content %}
+<section class="tool-shell">
+  <div class="tool-header">
+    <p class="eyebrow">Ask an upper-year</p>
+    <h1>{{ question.topic }}</h1>
+    <p>Private student-to-student question. Use practical guidance, not official policy; point back to official sources when requirements matter.</p>
+    <div class="cta-row">
+      <a class="button secondary" href="{{ url_for('main.notifications') }}">Notifications</a>
+      <a class="button secondary" href="{{ url_for('main.community') }}">Community hub</a>
+    </div>
+  </div>
+
+  <div class="content-split align-start">
+    <article class="tool-panel">
+      <div class="rating-row">
+        <small>{{ question.stage }}</small>
+        <small>{{ question.status }}</small>
+        <small>{{ question.created_at.strftime("%Y-%m-%d") if question.created_at else "recent" }}</small>
+      </div>
+      <h2>{{ question.topic }}</h2>
+      <p>{{ question.body }}</p>
+    </article>
+
+    <aside class="aside-box">
+      <p class="eyebrow">Asker profile</p>
+      <h2>{{ asker.display_name if asker else "Student" }}</h2>
+      <p><strong>Stage:</strong> {{ asker.stage if asker else question.stage }}</p>
+      {% if asker and asker.goal %}<p><strong>Goal:</strong> {{ asker.goal }}</p>{% endif %}
+      {% if asker and asker.pathway_tags %}<p><strong>Interests:</strong> {{ asker.pathway_tags|tags }}</p>{% endif %}
+      <p class="form-note">The asker’s email stays private. Your response is sent as an in-app notification.</p>
+    </aside>
+  </div>
+
+  {% if can_reply %}
+    <form class="tool-panel narrow" method="post">
+      <h2>Send a response</h2>
+      <label>Your guidance
+        <textarea required name="response" rows="7" placeholder="Answer the question, mention what worked for you, and say when they should confirm with an advisor or official source."></textarea>
+      </label>
+      <button class="button primary" type="submit">Send response</button>
+    </form>
+  {% else %}
+    <section class="notice-band light">
+      <strong>This is your question.</strong>
+      <span>Upper-years who are signed in and above your stage have been notified.</span>
+    </section>
+  {% endif %}
+</section>
+{% endblock %}

@@ -5,27 +5,82 @@
   <header class="tool-header">
     <p class="eyebrow">Account</p>
     <h1>Profile settings</h1>
-    <p>Use this to tune the dashboard recommendations and saved planning flow.</p>
+    <p>Your academic status and interests drive dashboard recommendations, upper-year question routing, and mentor matching.</p>
   </header>
+
   <form class="tool-panel narrow" method="post">
-    <div class="field-grid">
-      <label>Name
-        <input name="display_name" value="{{ user.display_name }}">
+    <section class="settings-block">
+      <p class="eyebrow">Question routing profile</p>
+      <h2>Student status and interests</h2>
+      <p class="form-note">When you ask an upper-year, Isocentre uses this profile instead of asking you to re-enter your year every time.</p>
+      <div class="field-grid">
+        <label>Name
+          <input name="display_name" value="{{ user.display_name }}">
+        </label>
+        <label>Academic status/year
+          <select name="stage">
+            {% for stage in stages %}
+              <option value="{{ stage }}" {% if user.stage == stage %}selected{% endif %}>{{ stage }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <label>Pathway interests
+        <input name="pathway_tags" value="{{ user.pathway_tags|tags }}" placeholder="clinical medical physics, imaging AI, co-op, health physics">
       </label>
-      <label>Stage
-        <select name="stage">
-          {% for stage in stages %}
-            <option value="{{ stage }}" {% if user.stage == stage %}selected{% endif %}>{{ stage }}</option>
-          {% endfor %}
-        </select>
+      <label>Main goal
+        <input name="goal" value="{{ user.goal }}" placeholder="Get into MedBioPhys, find research, apply to CAMPEP MSc...">
       </label>
-    </div>
-    <label>Pathway interests
-      <input name="pathway_tags" value="{{ user.pathway_tags|tags }}">
-    </label>
-    <label>Main goal
-      <input name="goal" value="{{ user.goal }}">
-    </label>
+    </section>
+
+    <section class="settings-block">
+      <p class="eyebrow">Networking</p>
+      <h2>Mentor directory profile</h2>
+      {% if mentor %}
+        <input type="hidden" name="mentor_profile_present" value="yes">
+        <p class="form-note">These fields update your public mentor card. If a hidden profile is made visible again, it returns to moderation before republishing.</p>
+        <div class="form-grid two">
+          <label>Directory status
+            <select name="mentor_visibility">
+              <option value="visible" {% if mentor.status != "hidden" %}selected{% endif %}>Visible or pending</option>
+              <option value="hidden" {% if mentor.status == "hidden" %}selected{% endif %}>Hidden</option>
+            </select>
+          </label>
+          <label>Available for mentorship?
+            <select name="mentor_available">
+              <option value="yes" {% if mentor.mentorship_available %}selected{% endif %}>Yes</option>
+              <option value="no" {% if not mentor.mentorship_available %}selected{% endif %}>Not right now</option>
+            </select>
+          </label>
+        </div>
+        <label>Role/year shown publicly
+          <input name="mentor_role_year" value="{{ mentor.role_year }}" placeholder="Level III MedBioPhys, alum, MSc student">
+        </label>
+        <div class="form-grid two">
+          <label>Public pathway tags
+            <input name="mentor_pathway_tags" value="{{ mentor.pathway_tags|tags }}" placeholder="medical physics, imaging AI, co-op">
+          </label>
+          <label>Public experience tags
+            <input name="mentor_experience_tags" value="{{ mentor.experience_tags|tags }}" placeholder="research, thesis, CAMPEP apps">
+          </label>
+        </div>
+        <label>Public bio
+          <textarea name="mentor_bio" rows="6">{{ mentor.bio }}</textarea>
+        </label>
+        <div class="form-grid two">
+          <label>Contact preference
+            <input name="mentor_contact_preference" value="{{ mentor.contact_preference }}" placeholder="Isocentre inbox, LinkedIn, email">
+          </label>
+          <label>Public contact text
+            <input name="mentor_public_contact_text" value="{{ mentor.public_contact_text }}" placeholder="Only what you want visible publicly">
+          </label>
+        </div>
+      {% else %}
+        <p>You do not have a mentor directory profile yet. Add one when you are ready to answer questions about courses, research, co-op, grad school, or career paths.</p>
+        <a class="button secondary" href="{{ url_for('main.submit_mentor') }}">Create mentor profile</a>
+      {% endif %}
+    </section>
+
     <div class="form-actions">
       <button class="button primary" type="submit">Save settings</button>
       <a class="button secondary" href="{{ url_for('main.dashboard') }}">Back to dashboard</a>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Admin Users | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <p class="eyebrow">Admin</p>
+  <h1>User accounts</h1>
+  <p>Inspect signed-in users, their stage, planner activity, mentor profile ownership, and community activity.</p>
+  <div class="cta-row"><a class="button secondary" href="{{ url_for('main.admin') }}">Dashboard</a></div>
+</section>
+
+<form class="filter-bar" method="get">
+  <label>Search
+    <input name="q" value="{{ query }}" placeholder="email, name, stage, goal">
+  </label>
+  <button class="button secondary" type="submit">Filter</button>
+</form>
+
+<section class="admin-list">
+  {% for user in users %}
+    <article class="review-card">
+      <div class="rating-row">
+        <small>{{ "McMaster" if user.is_mcmaster else "external" }}</small>
+        <small>{{ user.stage }}</small>
+        <small>{{ user.email }}</small>
+        <small>joined {{ user.created_at.strftime("%Y-%m-%d") if user.created_at else "unknown" }}</small>
+      </div>
+      <h3>{{ user.display_name }}</h3>
+      {% if user.goal %}<p>{{ user.goal }}</p>{% endif %}
+      <p>{{ user.pathway_tags|tags }}</p>
+      <div class="meta-row">
+        <span>{{ user.saved_courses.count() }} planner courses</span>
+        <span>{{ user.saved_guides.count() }} saved guides</span>
+        <span>{{ "last login " ~ user.last_login_at.strftime("%Y-%m-%d") if user.last_login_at else "no login timestamp" }}</span>
+      </div>
+      <div class="cta-row">
+        <a class="button secondary" href="{{ url_for('main.admin_mentors', status='all', q=user.email) }}">Mentor profiles</a>
+        <a class="button secondary" href="{{ url_for('main.admin_reviews', status='all', q=user.email) }}">Reviews</a>
+        <form method="post" action="{{ url_for('main.admin_delete', target_type='UserAccount', target_id=user.id) }}" onsubmit="return confirm('Delete this user account and related community activity?');">
+          <button class="button danger" type="submit">Delete user</button>
+        </form>
+      </div>
+    </article>
+  {% else %}
+    <p>No users found.</p>
+  {% endfor %}
+  {% if pagination and pagination.pages > 1 %}
+    <nav class="pagination" aria-label="Admin user pages">
+      {% if pagination.has_prev %}<a href="{{ url_for('main.admin_users', q=query, page=pagination.prev_num) }}">Previous</a>{% endif %}
+      <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.has_next %}<a href="{{ url_for('main.admin_users', q=query, page=pagination.next_num) }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

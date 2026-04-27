@@ -8,6 +8,7 @@ from app.models import (
     MentorProfile,
     ModerationStatus,
     Notification,
+    QuestionSubmission,
     UserAccount,
     UserCourseStatus,
     UserSavedGuide,
@@ -75,7 +76,7 @@ def test_mvp_routes_return_success(client):
 
     for route in routes:
         response = client.get(route)
-        if route in {"/notifications", "/messages"}:
+        if route in {"/notifications", "/messages", "/community/ask"}:
             assert response.status_code == 302, route
         else:
             assert response.status_code == 200, route
@@ -120,6 +121,23 @@ def test_register_dashboard_and_saved_items(client, app):
         assert user.is_mcmaster is True
         assert UserCourseStatus.query.filter_by(user_id=user.id).count() == 1
         assert UserSavedGuide.query.filter_by(user_id=user.id).count() == 1
+
+
+def test_register_requires_mcmaster_email(client, app):
+    response = client.post(
+        "/auth/register",
+        data={
+            "email": "student@example.com",
+            "password": "strong-pass",
+            "display_name": "External",
+            "stage": "Level I",
+        },
+    )
+
+    assert response.status_code == 400
+    assert b"@mcmaster.ca" in response.data
+    with app.app_context():
+        assert UserAccount.query.filter_by(email="student@example.com").first() is None
 
 
 def test_login_required_redirects_to_auth(client):
@@ -389,3 +407,386 @@ def test_mentor_message_creates_inbox_notification(client, app):
         message = MentorMessage.query.one()
         assert message.recipient_id == mentor_user_id
         assert Notification.query.filter_by(user_id=mentor_user_id, category="message").count() == 1
+
+
+def test_mentor_directory_filters_by_tag_availability_and_dm(client, app):
+    with app.app_context():
+        owner = UserAccount(
+            email="dmmentor@mcmaster.ca",
+            password_hash="x",
+            display_name="DM Mentor Owner",
+            stage="Alumni",
+            pathway_tags=[],
+            goal="",
+            is_mcmaster=True,
+        )
+        db.session.add(owner)
+        db.session.flush()
+        db.session.add_all(
+            [
+                MentorProfile(
+                    user_id=owner.id,
+                    display_name="DM CAMPEP Mentor",
+                    role_year="Alum",
+                    pathway_tags=["CAMPEP"],
+                    experience_tags=["residency"],
+                    bio="Ask about medical physics grad school.",
+                    contact_preference="Isocentre inbox",
+                    public_contact_text="",
+                    private_email=owner.email,
+                    email_hash="hash",
+                    status=ModerationStatus.APPROVED,
+                    mentorship_available=True,
+                ),
+                MentorProfile(
+                    display_name="Public CAMPEP Mentor",
+                    role_year="Alum",
+                    pathway_tags=["CAMPEP"],
+                    experience_tags=[],
+                    bio="Public contact only.",
+                    contact_preference="LinkedIn",
+                    public_contact_text="Find me publicly",
+                    private_email="public@mcmaster.ca",
+                    email_hash="hash2",
+                    status=ModerationStatus.APPROVED,
+                    mentorship_available=True,
+                ),
+                MentorProfile(
+                    user_id=owner.id,
+                    display_name="Busy CAMPEP Mentor",
+                    role_year="Alum",
+                    pathway_tags=["CAMPEP"],
+                    experience_tags=[],
+                    bio="Busy right now.",
+                    contact_preference="Isocentre inbox",
+                    public_contact_text="",
+                    private_email=owner.email,
+                    email_hash="hash3",
+                    status=ModerationStatus.APPROVED,
+                    mentorship_available=False,
+                ),
+            ]
+        )
+        db.session.commit()
+
+    response = client.get("/community/mentors?tag=CAMPEP&availability=available&contact=dm")
+
+    assert response.status_code == 200
+    assert b"DM CAMPEP Mentor" in response.data
+    assert b"Public CAMPEP Mentor" not in response.data
+    assert b"Busy CAMPEP Mentor" not in response.data
+
+
+def test_ask_upper_year_uses_account_stage_and_notifies_higher_years(client, app):
+    with app.app_context():
+        lower = UserAccount(
+            email="level-one@mcmaster.ca",
+            password_hash="x",
+            display_name="Level One",
+            stage="Level I",
+            pathway_tags=[],
+            goal="MedBioPhys admission",
+            is_mcmaster=True,
+        )
+        peer = UserAccount(
+            email="peer@mcmaster.ca",
+            password_hash="x",
+            display_name="Peer",
+            stage="Level I",
+            pathway_tags=[],
+            goal="",
+            is_mcmaster=True,
+        )
+        upper = UserAccount(
+            email="upper@mcmaster.ca",
+            password_hash="x",
+            display_name="Upper",
+            stage="Level II",
+            pathway_tags=[],
+            goal="",
+            is_mcmaster=True,
+        )
+        alum = UserAccount(
+            email="alum@mcmaster.ca",
+            password_hash="x",
+            display_name="Alum",
+            stage="Alumni",
+            pathway_tags=[],
+            goal="",
+            is_mcmaster=True,
+        )
+        db.session.add_all([lower, peer, upper, alum])
+        db.session.commit()
+        lower_id = lower.id
+        peer_id = peer.id
+        upper_id = upper.id
+        alum_id = alum.id
+
+    with client.session_transaction() as sess:
+        sess["user_id"] = lower_id
+
+    response = client.post(
+        "/community/ask",
+        data={"stage": "Graduating", "topic": "Level II load", "body": "How should I prepare?"},
+        follow_redirects=False,
+    )
+    assert response.status_code == 302
+
+    with app.app_context():
+        question = QuestionSubmission.query.one()
+        assert question.stage == "Level I"
+        assert Notification.query.filter_by(user_id=lower_id, category="question").count() == 1
+        assert Notification.query.filter_by(user_id=upper_id, category="upper-year-question").count() == 1
+        assert Notification.query.filter_by(user_id=alum_id, category="upper-year-question").count() == 1
+        assert Notification.query.filter_by(user_id=peer_id, category="upper-year-question").count() == 0
+        question_id = question.id
+
+    with client.session_transaction() as sess:
+        sess["user_id"] = upper_id
+    assert client.get(f"/community/ask/{question_id}").status_code == 200
+    reply = client.post(f"/community/ask/{question_id}", data={"response": "Review 1C03 and start labs early."})
+    assert reply.status_code == 302
+    with app.app_context():
+        assert Notification.query.filter_by(user_id=lower_id, category="question-reply").count() == 1
+
+
+def test_account_settings_updates_routing_profile_and_mentor_profile(client, app):
+    with app.app_context():
+        user = UserAccount(
+            email="settings@mcmaster.ca",
+            password_hash="x",
+            display_name="Settings User",
+            stage="Level II",
+            pathway_tags=["clinical medical physics"],
+            goal="Find research",
+            is_mcmaster=True,
+        )
+        db.session.add(user)
+        db.session.flush()
+        mentor = MentorProfile(
+            user_id=user.id,
+            display_name="Settings User",
+            role_year="Level II",
+            pathway_tags=["clinical medical physics"],
+            experience_tags=["research"],
+            bio="Ask me about Level II.",
+            contact_preference="Isocentre inbox",
+            public_contact_text="Message me",
+            private_email=user.email,
+            email_hash="hash",
+            status=ModerationStatus.APPROVED,
+            mentorship_available=True,
+        )
+        db.session.add(mentor)
+        db.session.commit()
+        user_id = user.id
+        mentor_id = mentor.id
+
+    with client.session_transaction() as sess:
+        sess["user_id"] = user_id
+
+    response = client.post(
+        "/account/settings",
+        data={
+            "display_name": "Updated User",
+            "stage": "Upper-year",
+            "pathway_tags": "imaging AI, co-op",
+            "goal": "Apply to CAMPEP",
+            "mentor_profile_present": "yes",
+            "mentor_visibility": "hidden",
+            "mentor_available": "no",
+            "mentor_role_year": "Upper-year co-op student",
+            "mentor_pathway_tags": "imaging AI",
+            "mentor_experience_tags": "co-op, thesis",
+            "mentor_bio": "Ask me about imaging projects.",
+            "mentor_contact_preference": "Isocentre inbox",
+            "mentor_public_contact_text": "DM me here",
+        },
+    )
+    assert response.status_code == 302
+
+    with app.app_context():
+        user = db.session.get(UserAccount, user_id)
+        mentor = db.session.get(MentorProfile, mentor_id)
+        assert user.stage == "Upper-year"
+        assert user.pathway_tags == ["imaging AI", "co-op"]
+        assert user.goal == "Apply to CAMPEP"
+        assert mentor.status == ModerationStatus.HIDDEN
+        assert mentor.mentorship_available is False
+        assert mentor.role_year == "Upper-year co-op student"
+        assert mentor.experience_tags == ["co-op", "thesis"]
+
+
+def test_admin_can_create_edit_and_delete_mentor_profile(client, app):
+    with app.app_context():
+        owner = UserAccount(
+            email="owner@mcmaster.ca",
+            password_hash="x",
+            display_name="Owner User",
+            stage="Upper-year",
+            pathway_tags=[],
+            goal="",
+            is_mcmaster=True,
+        )
+        db.session.add(owner)
+        db.session.commit()
+
+    with client.session_transaction() as sess:
+        sess["admin"] = True
+
+    create_response = client.post(
+        "/admin/mentors/new",
+        data={
+            "owner_email": "owner@mcmaster.ca",
+            "private_email": "",
+            "display_name": "Admin Mentor",
+            "role_year": "MSc student",
+            "pathway_tags": "clinical medical physics, CAMPEP",
+            "experience_tags": "thesis, grad applications",
+            "bio": "Can talk about graduate school and research.",
+            "contact_preference": "Isocentre inbox",
+            "public_contact_text": "Message me here",
+            "status": "approved",
+            "mentorship_available": "yes",
+            "featured": "no",
+        },
+        follow_redirects=False,
+    )
+    assert create_response.status_code == 302
+
+    with app.app_context():
+        mentor = MentorProfile.query.filter_by(display_name="Admin Mentor").one()
+        mentor_id = mentor.id
+        assert mentor.user.email == "owner@mcmaster.ca"
+        assert mentor.status == ModerationStatus.APPROVED
+
+    edit_response = client.post(
+        f"/admin/mentors/{mentor_id}/edit",
+        data={
+            "owner_email": "owner@mcmaster.ca",
+            "private_email": "",
+            "display_name": "Edited Mentor",
+            "role_year": "Medical physics resident",
+            "pathway_tags": "clinical medical physics",
+            "experience_tags": "CAMPEP, residency",
+            "bio": "Can talk about residency applications.",
+            "contact_preference": "Isocentre inbox",
+            "public_contact_text": "Use Isocentre messages",
+            "status": "approved",
+            "mentorship_available": "yes",
+            "featured": "yes",
+        },
+        follow_redirects=False,
+    )
+    assert edit_response.status_code == 302
+
+    with app.app_context():
+        mentor = db.session.get(MentorProfile, mentor_id)
+        assert mentor.display_name == "Edited Mentor"
+        assert mentor.featured is True
+
+    delete_response = client.post(f"/admin/delete/MentorProfile/{mentor_id}", follow_redirects=False)
+    assert delete_response.status_code == 302
+    with app.app_context():
+        assert db.session.get(MentorProfile, mentor_id) is None
+
+
+def test_admin_inventory_routes_require_admin_session(client):
+    assert client.get("/admin/users").status_code == 403
+    assert client.get("/admin/messages").status_code == 403
+    with client.session_transaction() as sess:
+        sess["admin"] = True
+    assert client.get("/admin").status_code == 200
+    assert client.get("/admin/mentors/new").status_code == 200
+    assert client.get("/admin/users").status_code == 200
+    assert client.get("/admin/messages").status_code == 200
+
+
+def test_admin_can_delete_message_and_user_activity(client, app):
+    with app.app_context():
+        course = Course.query.filter_by(code="PHYSICS2G03").one()
+        sender = UserAccount(
+            email="delete-sender@mcmaster.ca",
+            password_hash="x",
+            display_name="Delete Sender",
+            stage="Level II",
+            pathway_tags=[],
+            goal="",
+            is_mcmaster=True,
+        )
+        recipient = UserAccount(
+            email="delete-recipient@mcmaster.ca",
+            password_hash="x",
+            display_name="Delete Recipient",
+            stage="Alumni",
+            pathway_tags=[],
+            goal="",
+            is_mcmaster=True,
+        )
+        db.session.add_all([sender, recipient])
+        db.session.flush()
+        mentor = MentorProfile(
+            user_id=recipient.id,
+            display_name="Delete Mentor",
+            role_year="Alum",
+            pathway_tags=["clinical medical physics"],
+            experience_tags=["thesis"],
+            bio="Delete me.",
+            contact_preference="Isocentre inbox",
+            public_contact_text="",
+            private_email=recipient.email,
+            email_hash="hash",
+            status=ModerationStatus.APPROVED,
+        )
+        db.session.add(mentor)
+        db.session.flush()
+        message = MentorMessage(mentor_id=mentor.id, sender_id=sender.id, recipient_id=recipient.id, subject="Delete message", body="body")
+        review = CourseReview(
+            course_id=course.id,
+            user_id=sender.id,
+            email_private=sender.email,
+            submitter_email_hash="hash",
+            status=ModerationStatus.APPROVED,
+            term_taken="Winter 2026",
+            difficulty=3,
+            workload=3,
+            usefulness=5,
+            math_intensity=3,
+            coding_intensity=5,
+            memorization_intensity=1,
+            would_take_again=True,
+            advice="Delete review.",
+        )
+        question = QuestionSubmission(
+            user_id=sender.id,
+            stage="Level II",
+            topic="Delete question",
+            body="body",
+            private_email=sender.email,
+            email_hash="hash",
+            status=ModerationStatus.PENDING,
+        )
+        db.session.add_all([message, review, question, UserCourseStatus(user_id=sender.id, course_id=course.id, status="planned")])
+        db.session.flush()
+        db.session.add(Notification(user_id=recipient.id, title="Message", body="body", category="message", target_type="MentorMessage", target_id=message.id))
+        db.session.commit()
+        message_id = message.id
+        sender_id = sender.id
+        recipient_id = recipient.id
+
+    with client.session_transaction() as sess:
+        sess["admin"] = True
+    response = client.post(f"/admin/delete/MentorMessage/{message_id}", follow_redirects=False)
+    assert response.status_code == 302
+    with app.app_context():
+        assert db.session.get(MentorMessage, message_id) is None
+        assert Notification.query.filter_by(target_type="MentorMessage", target_id=message_id).count() == 0
+
+    response = client.post(f"/admin/delete/UserAccount/{sender_id}", follow_redirects=False)
+    assert response.status_code == 302
+    with app.app_context():
+        assert db.session.get(UserAccount, sender_id) is None
+        assert CourseReview.query.filter_by(user_id=sender_id).count() == 0
+        assert QuestionSubmission.query.filter_by(user_id=sender_id).count() == 0
+        assert UserCourseStatus.query.filter_by(user_id=sender_id).count() == 0
+        assert db.session.get(UserAccount, recipient_id) is not None
