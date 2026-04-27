@@ -81,13 +81,21 @@
     <footer class="site-footer">
       <div>
         <strong>Isocentre</strong>
-        <p>Unofficial, student-facing interpretation for McMaster Medical & Biological Physics. Always confirm requirements with official McMaster sources.</p>
+        <p>Unofficial, student-facing interpretation for McMaster Medical & Biological Physics. Built by {{ creator_name }}. Not affiliated with McMaster University. Always confirm requirements with official McMaster sources.</p>
+        <div class="footer-socials" aria-label="{{ creator_name }} social links">
+          {% for label, href in creator_links %}
+            {% if href %}
+              <a href="{{ href }}" target="_blank" rel="noopener noreferrer">{{ label }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
       </div>
       <div class="footer-links">
         <a href="{{ url_for('main.guide_map') }}">Roadmap</a>
         <a href="{{ url_for('main.search') }}">Search</a>
         <a href="{{ url_for('main.resources') }}">Official links</a>
         <a href="{{ url_for('main.page', slug='medbiophys-vs-mrsc') }}">MedBioPhys vs MRSc</a>
+        <a href="{{ url_for('main.terms') }}">Terms</a>
         {% if current_user %}
           <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
           <a href="{{ url_for('main.notifications') }}">Notifications</a>

@@ -66,6 +66,7 @@ def test_mvp_routes_return_success(client):
         "/roadmap",
         "/sample-course-outline",
         "/search",
+        "/terms",
         "/auth/login",
         "/auth/register",
         "/community",
@@ -105,6 +106,7 @@ def test_register_dashboard_and_saved_items(client, app):
             "stage": "Level II",
             "pathway_tags": "clinical medical physics, imaging AI",
             "goal": "survive Level II",
+            "accepted_terms": "yes",
         },
         follow_redirects=False,
     )
@@ -134,6 +136,7 @@ def test_register_requires_mcmaster_email(client, app):
             "password": "strong-pass",
             "display_name": "External",
             "stage": "Level I",
+            "accepted_terms": "yes",
         },
     )
 
@@ -141,6 +144,23 @@ def test_register_requires_mcmaster_email(client, app):
     assert b"@mcmaster.ca" in response.data
     with app.app_context():
         assert UserAccount.query.filter_by(email="student@example.com").first() is None
+
+
+def test_register_requires_terms_acceptance(client, app):
+    response = client.post(
+        "/auth/register",
+        data={
+            "email": "termscheck@mcmaster.ca",
+            "password": "strong-pass",
+            "display_name": "Terms Check",
+            "stage": "Level I",
+        },
+    )
+
+    assert response.status_code == 400
+    assert b"Terms and Conditions" in response.data
+    with app.app_context():
+        assert UserAccount.query.filter_by(email="termscheck@mcmaster.ca").first() is None
 
 
 def test_login_required_redirects_to_auth(client):
@@ -278,6 +298,7 @@ def test_review_submission_uses_account_and_notifications(client, app):
             "password": "strong-pass",
             "display_name": "Reviewer",
             "stage": "Level II",
+            "accepted_terms": "yes",
         },
     )
     response = client.post(
@@ -399,6 +420,7 @@ def test_mentor_message_creates_inbox_notification(client, app):
             "password": "strong-pass",
             "display_name": "Mentee",
             "stage": "Level II",
+            "accepted_terms": "yes",
         },
     )
     response = client.post(

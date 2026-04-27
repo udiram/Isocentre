@@ -66,6 +66,13 @@ def inject_user():
         "unread_notifications": unread_notifications,
         "unread_messages": unread_messages,
         "google_analytics_id": current_app.config.get("GOOGLE_ANALYTICS_ID", ""),
+        "creator_name": current_app.config.get("CREATOR_NAME", "Udbhav Ram"),
+        "creator_links": [
+            ("Website", current_app.config.get("CREATOR_WEBSITE_URL", "")),
+            ("LinkedIn", current_app.config.get("CREATOR_LINKEDIN_URL", "")),
+            ("X", current_app.config.get("CREATOR_X_URL", "")),
+            ("GitHub", current_app.config.get("CREATOR_GITHUB_URL", "")),
+        ],
     }
 
 
@@ -199,6 +206,11 @@ def search():
         resources=resources_found,
         mentors=mentors_found,
     )
+
+
+@bp.route("/terms")
+def terms():
+    return render_template("terms.html")
 
 
 @bp.route("/favicon.ico")
@@ -339,9 +351,13 @@ def register():
     stage = clean_text(request.form.get("stage", "Level I")) or "Level I"
     goal = clean_text(request.form.get("goal", ""))
     tags = split_tags(request.form.get("pathway_tags", ""))
+    accepted_terms = request.form.get("accepted_terms") == "yes"
 
     if not email or "@" not in email:
         flash("Enter a valid email address.", "error")
+        return render_template("auth/register.html", stages=stage_names()), 400
+    if not accepted_terms:
+        flash("You need to accept the Terms and Conditions to create an account.", "error")
         return render_template("auth/register.html", stages=stage_names()), 400
     if not is_mcmaster_email(email):
         flash("Use your @mcmaster.ca email to create an Isocentre account.", "error")

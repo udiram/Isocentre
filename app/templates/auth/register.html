@@ -32,6 +32,10 @@
     <label>Main goal right now
       <input name="goal" placeholder="Plan Level II, find research, choose electives">
     </label>
+    <label class="check-row terms-check">
+      <input name="accepted_terms" type="checkbox" value="yes" required>
+      <span>I understand Isocentre is unofficial, not affiliated with McMaster University, and I agree to the <a href="{{ url_for('main.terms') }}" target="_blank" rel="noopener noreferrer">Terms and Conditions</a>.</span>
+    </label>
     <button class="button primary" type="submit">Create account</button>
     <p class="form-note">Already have an account? <a href="{{ url_for('main.login') }}">Sign in</a>.</p>
   </form>

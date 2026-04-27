@@ -45,6 +45,11 @@ def create_app(test_config=None):
         MAX_CONTENT_LENGTH=int(os.getenv("MAX_CONTENT_LENGTH", str(24 * 1024 * 1024))),
         MESSAGE_ATTACHMENT_MAX_BYTES=int(os.getenv("MESSAGE_ATTACHMENT_MAX_BYTES", str(8 * 1024 * 1024))),
         MESSAGE_ATTACHMENT_MAX_COUNT=int(os.getenv("MESSAGE_ATTACHMENT_MAX_COUNT", "4")),
+        CREATOR_NAME=os.getenv("CREATOR_NAME", "Udbhav Ram"),
+        CREATOR_WEBSITE_URL=os.getenv("CREATOR_WEBSITE_URL", "https://sites.google.com/view/udbhav-ram"),
+        CREATOR_LINKEDIN_URL=os.getenv("CREATOR_LINKEDIN_URL", "https://www.linkedin.com/in/udbhav-ram-engineering-and-medicine"),
+        CREATOR_X_URL=os.getenv("CREATOR_X_URL", "https://x.com/udiram"),
+        CREATOR_GITHUB_URL=os.getenv("CREATOR_GITHUB_URL", "https://github.com/udiram"),
     )
 
     if test_config:

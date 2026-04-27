@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Terms and Conditions | Isocentre{% endblock %}
+{% block content %}
+<article class="article-shell legal-shell">
+  <header class="article-header compact">
+    <p class="eyebrow">Terms and conditions</p>
+    <h1>Isocentre is an unofficial student-built guide.</h1>
+    <p>Last updated April 27, 2026. These terms explain what Isocentre is, what it is not, and how community features should be used.</p>
+  </header>
+
+  <div class="article-layout">
+    <div class="article-body">
+      <h2>No McMaster Affiliation</h2>
+      <p>Isocentre is not part of, operated by, endorsed by, reviewed by, or officially affiliated with McMaster University, the Faculty of Science, the Department of Physics &amp; Astronomy, Medical Radiation Sciences, Mohawk College, or any McMaster office, department, program, administrator, instructor, advisor, or employee.</p>
+      <p>This site is an independent, unofficial, student-facing guide built and maintained by {{ creator_name }}. Any use of McMaster names, program names, course codes, or source links is for identification, commentary, and student navigation only.</p>
+
+      <h2>Official Sources Always Govern</h2>
+      <p>Isocentre translates public program information into plain-English planning guidance, but it does not replace the Undergraduate Calendar, MAP, Mosaic, academic advising, program offices, course outlines, department pages, co-op offices, graduate program pages, or any official McMaster policy.</p>
+      <p>Requirements, prerequisites, antirequisites, course availability, admission rules, co-op requirements, deadlines, and graduation rules can change. Always confirm decisions with official McMaster sources before enrolling, dropping courses, applying to programs, or making academic plans.</p>
+
+      <h2>Educational Information Only</h2>
+      <p>Content on Isocentre is for general educational and planning purposes. It is not academic advising, legal advice, medical advice, financial advice, admissions advice, or a guarantee of admission, grades, co-op placement, research placement, graduate school admission, residency placement, employment, certification, or professional licensure.</p>
+
+      <h2>Student Advice and Community Content</h2>
+      <p>Course reviews, mentor profiles, messages, alumni notes, comments, study strategies, pathway opinions, and other community submissions are personal experiences. They may be incomplete, subjective, outdated, or not applicable to your situation.</p>
+      <p>Community features are moderated where practical, but moderation does not mean Isocentre verifies every factual statement. Use judgment, compare multiple perspectives, and check official sources.</p>
+
+      <h2>Academic Integrity and Copyright</h2>
+      <p>Do not upload, request, share, link to, or distribute private tests, assignment solutions, lab reports, answer keys, copyrighted course packs, instructor-only materials, private lecture recordings, confidential clinical/research data, or anything that would violate academic integrity rules, copyright law, privacy obligations, research ethics, or course policies.</p>
+      <p>Original notes, planning templates, public links, resume drafts, portfolios, study strategies, research-outreach drafts, and general mentorship materials are welcome when they are yours to share.</p>
+
+      <h2>Accounts, Messages, and Files</h2>
+      <p>Accounts are intended for McMaster community use. Messages and attachments are provided to support mentorship, research planning, course planning, co-op preparation, and pathway advice. Do not use Isocentre for harassment, spam, impersonation, doxxing, threats, academic misconduct, or sharing sensitive personal, health, clinical, financial, or confidential research information.</p>
+      <p>Private messages and uploads are not public, but they may be reviewed by site administration for safety, moderation, abuse prevention, debugging, or legal compliance. Do not upload anything you would not want a site administrator to handle for those purposes.</p>
+
+      <h2>Moderation</h2>
+      <p>Isocentre may approve, reject, hide, edit, remove, or delete submissions, reviews, mentor profiles, questions, messages, files, accounts, or links at any time. Content may be removed for being inaccurate, harmful, off-topic, abusive, promotional, private, copyrighted, or inconsistent with the purpose of the site.</p>
+
+      <h2>Availability and Accuracy</h2>
+      <p>Isocentre is provided as-is. The site may contain errors, omissions, broken links, outdated information, downtime, bugs, data loss, or incomplete features. No warranty is made that the site will be accurate, available, secure, or suitable for a particular decision.</p>
+
+      <h2>Limitation of Responsibility</h2>
+      <p>By using Isocentre, you understand that decisions about courses, programs, admissions, co-op, research, graduate school, employment, certification, or professional pathways are your responsibility. Isocentre and its creator are not responsible for losses, consequences, missed requirements, missed deadlines, academic outcomes, account issues, or decisions made from using the site.</p>
+
+      <h2>Changes</h2>
+      <p>These terms and site features may change as Isocentre evolves. Continued use of the site means you accept the current version of these terms.</p>
+    </div>
+
+    <aside class="article-aside">
+      <div class="aside-box warning">
+        <strong>Plain English version</strong>
+        <p>This is Udbhav’s unofficial guide, not McMaster’s. Use it to understand the program, but verify anything important with official McMaster sources.</p>
+      </div>
+      <div class="aside-box">
+        <strong>Official links first</strong>
+        <p>When requirements matter, start with the official calendar, MAP, department pages, and advisors.</p>
+        <a href="{{ url_for('main.resources') }}">Open official sources</a>
+      </div>
+      <div class="aside-box">
+        <strong>Creator</strong>
+        <p>Built and maintained by {{ creator_name }}.</p>
+        <div class="footer-socials compact">
+          {% for label, href in creator_links %}
+            {% if href %}<a href="{{ href }}" target="_blank" rel="noopener noreferrer">{{ label }}</a>{% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </aside>
+  </div>
+</article>
+{% endblock %}
