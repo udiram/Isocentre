@@ -31,10 +31,10 @@ Community submissions and mentor messages use Isocentre's built-in notification 
 Railway can start the app with the included `Procfile`:
 
 ```bash
-gunicorn "wsgi:app"
+flask --app wsgi:app db upgrade && flask --app wsgi:app seed && gunicorn "wsgi:app"
 ```
 
-For a fresh database, run:
+The start command runs migrations and the idempotent seed before booting Gunicorn, which prevents fresh Railway databases from failing with missing-table errors such as `relation "page" does not exist`. If you run commands manually, use:
 
 ```bash
 flask --app wsgi:app db upgrade
