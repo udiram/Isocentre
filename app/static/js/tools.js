@@ -263,7 +263,71 @@ function initEmailTool() {
   });
 }
 
+function initChatComposer() {
+  document.querySelectorAll("[data-chat-composer]").forEach((form) => {
+    const input = form.querySelector("[data-chat-input]");
+    const fileInput = form.querySelector("[data-file-input]");
+    const fileList = form.querySelector("[data-file-list]");
+    if (!input) return;
+
+    const resizeInput = () => {
+      input.style.height = "auto";
+      input.style.height = `${Math.min(input.scrollHeight, 132)}px`;
+    };
+
+    const updateFiles = () => {
+      if (!fileInput || !fileList) return;
+      const files = Array.from(fileInput.files || []);
+      fileList.innerHTML = "";
+      fileList.classList.toggle("has-files", files.length > 0);
+      files.slice(0, 4).forEach((file) => {
+        const item = document.createElement("span");
+        item.className = "chat-file-chip";
+        item.innerHTML = `<strong>${escapeHtml(file.name)}</strong><small>${formatFileSize(file.size)}</small>`;
+        fileList.appendChild(item);
+      });
+      if (files.length > 4) {
+        const extra = document.createElement("span");
+        extra.className = "chat-file-chip muted";
+        extra.textContent = `${files.length - 4} more selected`;
+        fileList.appendChild(extra);
+      }
+    };
+
+    input.addEventListener("input", resizeInput);
+    input.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
+      event.preventDefault();
+      if (input.value.trim() || (fileInput && fileInput.files.length)) {
+        form.requestSubmit();
+      }
+    });
+
+    if (fileInput) {
+      fileInput.addEventListener("change", updateFiles);
+    }
+    resizeInput();
+    updateFiles();
+  });
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatFileSize(bytes) {
+  if (!Number.isFinite(bytes)) return "";
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
 initGpaTool();
 initRequirementsTool();
 initProgramTool();
 initEmailTool();
+initChatComposer();

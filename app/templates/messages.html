@@ -90,17 +90,18 @@
           {% endfor %}
         </div>
 
-        <form class="chat-composer" method="post" action="{{ url_for('main.reply_message', message_id=active_thread.last_message.id) }}" enctype="multipart/form-data">
-          <label class="sr-only" for="reply-body">Reply</label>
-          <textarea id="reply-body" name="body" rows="3" placeholder="Reply with context, next steps, links, or a specific question."></textarea>
-          <div class="chat-composer-footer">
-            <label class="file-drop">Attach files
-              <input name="attachments" type="file" multiple>
-              <span>PDFs, images, docs, spreadsheets, zipped portfolios. Max 4 files, 8 MB each.</span>
+        <form class="chat-composer" method="post" action="{{ url_for('main.reply_message', message_id=active_thread.last_message.id) }}" enctype="multipart/form-data" data-chat-composer>
+          <div class="chat-selected-files" data-file-list aria-live="polite"></div>
+          <div class="chat-composer-bar">
+            <label class="chat-attach-button" title="Attach files" aria-label="Attach files">
+              <span aria-hidden="true">+</span>
+              <input name="attachments" type="file" multiple data-file-input>
             </label>
-            <button class="button primary" type="submit">Send</button>
+            <label class="sr-only" for="reply-body">Reply</label>
+            <textarea id="reply-body" name="body" rows="1" placeholder="Message {{ active_thread.peer.display_name if active_thread.peer else 'this conversation' }}" data-chat-input></textarea>
+            <button class="chat-send-button" type="submit" aria-label="Send message">Send</button>
           </div>
-          <p class="form-note">Keep messages mentorship-focused. Do not share private tests, assignment solutions, or copyrighted course materials.</p>
+          <p class="chat-composer-hint">Enter sends. Shift+Enter adds a new line. Attach up to 4 files, 8 MB each. No private tests or assignment solutions.</p>
         </form>
       {% else %}
         <div class="chat-empty-state">
