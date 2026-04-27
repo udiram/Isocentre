@@ -1114,6 +1114,8 @@ def admin_delete(target_type, target_id):
     db.session.commit()
     public_cache.clear()
     flash(f"{labelize(target_type)} deleted.", "success")
+    if target_type == "MentorProfile":
+        return redirect(url_for("main.admin_mentors", status="all"))
     return redirect(request.referrer or url_for("main.admin"))
 
 

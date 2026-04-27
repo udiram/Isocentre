@@ -685,8 +685,9 @@ def test_admin_can_create_edit_and_delete_mentor_profile(client, app):
         assert mentor.display_name == "Edited Mentor"
         assert mentor.featured is True
 
-    delete_response = client.post(f"/admin/delete/MentorProfile/{mentor_id}", follow_redirects=False)
+    delete_response = client.post(f"/admin/delete/MentorProfile/{mentor_id}", headers={"Referer": f"/admin/mentors/{mentor_id}/edit"}, follow_redirects=False)
     assert delete_response.status_code == 302
+    assert "/admin/mentors" in delete_response.headers["Location"]
     with app.app_context():
         assert db.session.get(MentorProfile, mentor_id) is None
 
