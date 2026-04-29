@@ -44,6 +44,8 @@ def client(app):
 def test_mvp_routes_return_success(client):
     routes = [
         "/",
+        "/what-is-medical-physics",
+        "/medical-physics",
         "/guide/medbiophys-explained",
         "/guide/medbiophys-vs-mrsc",
         "/guide/level-ii-admission-guide",
@@ -90,10 +92,25 @@ def test_roadmap_has_research_and_outreach_structure(client):
     response = client.get("/roadmap")
 
     assert response.status_code == 200
+    assert b"Follow the MedBioPhys path without losing the thread." in response.data
+    assert b"Pick the question you are actually facing." in response.data
     assert b"Semester by semester" in response.data
+    assert b"Do this now" in response.data
     assert b"NSERC USRA" in response.data
     assert b"Kevin Diamond" in response.data
     assert b"Undergraduate research inquiry" in response.data
+
+
+def test_medical_physics_page_explains_careers(client):
+    response = client.get("/what-is-medical-physics")
+
+    assert response.status_code == 200
+    assert b"What is medical physics?" in response.data
+    assert b"Radiation oncology medical physicist" in response.data
+    assert b"Diagnostic imaging physicist" in response.data
+    assert b"Health physicist / radiation protection specialist" in response.data
+    assert b"CAMPEP" in response.data
+    assert b"CCPM" in response.data
 
 
 def test_register_dashboard_and_saved_items(client, app):

@@ -218,6 +218,87 @@ def favicon():
     return redirect(url_for("static", filename="img/favicon.svg"), code=302)
 
 
+@bp.route("/what-is-medical-physics")
+@bp.route("/medical-physics")
+def medical_physics():
+    career_tracks = [
+        {
+            "title": "Radiation oncology medical physicist",
+            "tag": "Clinical cancer care",
+            "summary": "Works with linear accelerators, treatment planning systems, brachytherapy, patient-specific QA, machine calibration, and radiation safety so cancer treatments are accurate and safe.",
+            "environment": "Cancer centres, radiation oncology departments, hospital physics groups, vendors, academic medical centres.",
+            "build": "Radiation physics, dosimetry, anatomy, programming, uncertainty analysis, careful lab habits, and clinical communication.",
+        },
+        {
+            "title": "Diagnostic imaging physicist",
+            "tag": "X-ray, CT, mammography",
+            "summary": "Optimizes image quality and dose for diagnostic systems, tests equipment performance, supports protocol review, and helps clinics balance visibility, speed, and radiation exposure.",
+            "environment": "Hospitals, imaging networks, equipment vendors, regulatory bodies, quality assurance consultancies.",
+            "build": "Signals, detectors, image processing, statistics, radiation interactions, QA documentation, and practical troubleshooting.",
+        },
+        {
+            "title": "Nuclear medicine physicist",
+            "tag": "PET, SPECT, radionuclides",
+            "summary": "Supports imaging and therapy that use radioactive tracers, including scanner calibration, reconstruction methods, dosimetry, shielding, and quantitative image analysis.",
+            "environment": "Nuclear medicine departments, PET centres, radiopharmaceutical groups, research hospitals.",
+            "build": "Radioactivity, detector physics, reconstruction, biokinetics, Python/MATLAB, and comfort with cross-disciplinary clinical teams.",
+        },
+        {
+            "title": "MRI physicist",
+            "tag": "Magnetic resonance",
+            "summary": "Develops, validates, and supports MRI pulse sequences, image reconstruction, artifact reduction, safety procedures, and research protocols.",
+            "environment": "Hospitals, research institutes, scanner vendors, neuroimaging labs, graduate programs.",
+            "build": "E&M, Fourier methods, signals, coding, physiology, optimization, and a strong portfolio of imaging projects.",
+        },
+        {
+            "title": "Health physicist / radiation protection specialist",
+            "tag": "Safety and regulation",
+            "summary": "Designs and audits radiation protection programs for workers, patients, the public, and the environment. The work is about dose limits, shielding, monitoring, licensing, and incident prevention.",
+            "environment": "Hospitals, nuclear facilities, universities, government, environmental monitoring, radiation safety offices.",
+            "build": "Radiation detection, dose calculation, regulatory literacy, technical writing, risk communication, and field measurement skills.",
+        },
+        {
+            "title": "Medical imaging or AI scientist",
+            "tag": "Computation and data",
+            "summary": "Builds algorithms that segment anatomy, reconstruct images, detect patterns, evaluate image quality, support treatment planning, or validate models for research and product settings.",
+            "environment": "Research labs, startups, medtech companies, hospital innovation groups, graduate programs.",
+            "build": "Python, machine learning, image processing, validation design, statistics, version control, and datasets with honest limitations.",
+        },
+        {
+            "title": "Biophysics / soft matter researcher",
+            "tag": "Living systems",
+            "summary": "Uses physics to study cells, membranes, proteins, tissues, fluids, materials, and molecular systems. This is often less clinical and more discovery-driven.",
+            "environment": "Graduate research groups, biotech, materials labs, microscopy facilities, academic institutes.",
+            "build": "Thermodynamics, statistical mechanics, microscopy, modelling, wet/dry lab fluency, and literature-reading stamina.",
+        },
+        {
+            "title": "Biomedical instrumentation or medtech engineer",
+            "tag": "Devices and systems",
+            "summary": "Designs, tests, or supports medical devices, detectors, sensors, imaging hardware, treatment systems, and quality-control tools.",
+            "environment": "Device companies, hospital engineering groups, startups, research platforms, manufacturing QA.",
+            "build": "Electronics, controls, CAD or hardware exposure, regulatory awareness, software testing, and clear engineering documentation.",
+        },
+        {
+            "title": "Regulatory, policy, or science communication",
+            "tag": "Translation layer",
+            "summary": "Turns technical evidence into guidance, safety standards, policy, education, product documentation, grants, or public-facing communication.",
+            "environment": "Government, professional bodies, hospitals, nonprofits, publishers, companies, science policy offices.",
+            "build": "Technical writing, statistics, ethics, source evaluation, stakeholder communication, and the ability to explain uncertainty plainly.",
+        },
+    ]
+    sources = [
+        ("AAPM: prospective medical physics students", "https://www.aapm.org/students/prospective.asp"),
+        ("AAPM: medical physics career profiles", "https://www.aapm.org/careers/jobseekers/resources/profiles/medical-physics-jobs.asp"),
+        ("IOMP: definition of medical physicists", "https://www.iomp.org/definition-of-medical-physicists-by-iomp/"),
+        ("CAMPEP: accredited graduate programs", "https://www.campep.org/campeplstgrad.asp"),
+        ("CAMPEP: accredited residency programs", "https://www.campep.org/campeplstres.asp"),
+        ("CCPM: Canadian certification", "https://ccpm.ca/certification"),
+        ("McMaster RadGrad CAMPEP program", "https://radgrad.physics.mcmaster.ca/programs/campep/"),
+        ("Health Canada Radiation Protection Bureau", "https://www.canada.ca/en/health-canada/corporate/about-health-canada/branches-agencies/healthy-environments-consumer-safety-branch/environmental-radiation-health-sciences-directorate/radiation-protection-bureau.html"),
+    ]
+    return render_template("medical_physics.html", career_tracks=career_tracks, sources=sources)
+
+
 @bp.route("/guide/<slug>")
 def page(slug):
     item = Page.query.filter_by(slug=slug).first_or_404()

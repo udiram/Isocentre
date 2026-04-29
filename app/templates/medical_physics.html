@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}What is Medical Physics? | Isocentre{% endblock %}
+{% block content %}
+<section class="page-hero medphys-hero">
+  <div>
+    <h1>What is medical physics?</h1>
+    <p>Medical physics is the use of physics, computation, measurement, and radiation science to solve problems in medicine and biology. It can lead to clinical hospital work, imaging and AI, radiation protection, biophysics research, medtech, graduate school, and adjacent healthcare technology roles.</p>
+    <div class="cta-row">
+      <a class="button primary" href="#career-directions">Explore careers</a>
+      <a class="button secondary" href="{{ url_for('main.page', slug='clinical-medical-physics-roadmap') }}">Clinical roadmap</a>
+      <a class="button secondary" href="{{ url_for('main.page', slug='medbiophys-vs-mrsc') }}">Compare MRSc</a>
+    </div>
+  </div>
+  <aside class="medphys-snapshot" aria-label="Medical physics snapshot">
+    <strong>Big idea</strong>
+    <p>You are learning how to make invisible things measurable: radiation dose, image quality, scanner performance, biological structure, treatment uncertainty, and model reliability.</p>
+    <div class="snapshot-grid">
+      <span>Hospitals</span>
+      <span>Research</span>
+      <span>Medtech</span>
+      <span>Safety</span>
+    </div>
+  </aside>
+</section>
+
+<section class="roadmap-shell medphys-anchor-grid" aria-label="Page shortcuts">
+  <a href="#what-it-is">
+    <span>01</span>
+    <strong>The field</strong>
+    <small>What medical physics is and is not.</small>
+  </a>
+  <a href="#after-degree">
+    <span>02</span>
+    <strong>After the degree</strong>
+    <small>Grad school, residency, jobs, and adjacent options.</small>
+  </a>
+  <a href="#career-directions">
+    <span>03</span>
+    <strong>Career directions</strong>
+    <small>What each path actually does day to day.</small>
+  </a>
+  <a href="#how-to-choose">
+    <span>04</span>
+    <strong>How to choose</strong>
+    <small>Signals that point toward a good fit.</small>
+  </a>
+</section>
+
+<section class="content-split medphys-foundation" id="what-it-is">
+  <div>
+    <h2>It is applied physics in a medical or biological setting.</h2>
+    <p class="muted-copy">The clinical version of medical physics is a regulated, graduate-level profession. The broader undergraduate ecosystem is bigger: imaging, radiation, biophysics, instrumentation, data science, health physics, and research all sit near the same toolkit.</p>
+    <div class="medphys-pillars">
+      <article>
+        <span>Measurement</span>
+        <p>Calibrating machines, measuring dose, testing detector response, estimating uncertainty, and proving that systems perform as expected.</p>
+      </article>
+      <article>
+        <span>Modelling</span>
+        <p>Using equations, simulations, reconstruction algorithms, and statistical models to connect physical signals to biological or clinical decisions.</p>
+      </article>
+      <article>
+        <span>Translation</span>
+        <p>Turning physics into something useful for physicians, therapists, technologists, patients, researchers, regulators, or product teams.</p>
+      </article>
+    </div>
+  </div>
+  <div class="medphys-truth-box">
+    <h3>Important distinctions</h3>
+    <ul>
+      <li>A medical physics undergraduate degree does not make you an independent clinical medical physicist by itself.</li>
+      <li>Clinical medical physics normally continues through CAMPEP-accredited graduate training, clinical residency-style training, and certification.</li>
+      <li>Radiation therapist, radiographer, sonographer, dosimetrist, biomedical engineer, and medical physicist are different roles.</li>
+      <li>The degree can still be useful even if you do not become a clinical physicist, because the technical toolkit transfers well.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="roadmap-shell" id="after-degree">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">After undergrad</p>
+      <h2>There is not one outcome. There are several realistic branches.</h2>
+    </div>
+    <a class="text-link" href="{{ url_for('main.page', slug='grad-school-campep-guide') }}">Grad school guide</a>
+  </div>
+  <div class="medphys-pathway">
+    <article>
+      <span>Clinical medical physics</span>
+      <h3>Undergrad to CAMPEP to residency to certification</h3>
+      <p>The hospital physicist route is the most structured. In Canada, students should understand CAMPEP-accredited graduate education, residency training, and CCPM certification expectations early.</p>
+      <a href="{{ url_for('main.page', slug='clinical-medical-physics-roadmap') }}">Map this path</a>
+    </article>
+    <article>
+      <span>Research and graduate school</span>
+      <h3>MSc, PhD, thesis, imaging, biophysics, radiation, AI</h3>
+      <p>This route fits students who want discovery, technical depth, publications, or future academic and R&D roles. Research fit matters as much as course titles.</p>
+      <a href="{{ url_for('main.page', slug='research-guide') }}">Find research</a>
+    </article>
+    <article>
+      <span>Technical industry</span>
+      <h3>Imaging, medtech, data, QA, software, instrumentation</h3>
+      <p>Students who build code, lab evidence, device exposure, validation habits, and co-op experience can position themselves for technical roles outside a clinical physicist title.</p>
+      <a href="{{ url_for('main.page', slug='medical-imaging-ai-portfolio') }}">Build a portfolio</a>
+    </article>
+    <article>
+      <span>Radiation safety and regulation</span>
+      <h3>Health physics, monitoring, compliance, risk communication</h3>
+      <p>This branch uses radiation physics and measurement to protect workers, patients, the public, and the environment. It can sit in hospitals, nuclear settings, universities, or government.</p>
+      <a href="{{ url_for('main.page', slug='health-physics-radiation-protection') }}">Explore health physics</a>
+    </article>
+  </div>
+</section>
+
+<section class="roadmap-shell medphys-prospects">
+  <div>
+    <p class="eyebrow">Career prospects</p>
+    <h2>What can you do with the degree?</h2>
+    <p class="muted-copy">The honest answer is: the degree opens doors when it is paired with evidence. Courses alone are rarely the whole story. Research, co-op, coding, clinical exposure, strong references, and a coherent track turn “medical and biological physics” into a convincing next-step profile.</p>
+  </div>
+  <div class="prospect-grid">
+    <article>
+      <strong>Right after undergrad</strong>
+      <p>Look for research assistant, lab technician, imaging/data analyst, QA, radiation safety assistant, clinical research, device support, scientific software, and graduate-school bridge roles.</p>
+    </article>
+    <article>
+      <strong>After a master's or PhD</strong>
+      <p>More doors open in medical physics residency competition, imaging science, biophysics research, R&D, algorithm development, industry scientist roles, and technical leadership tracks.</p>
+    </article>
+    <article>
+      <strong>With clinical training</strong>
+      <p>Residency and certification move you toward independent clinical medical physicist work in radiation oncology, diagnostic imaging, nuclear medicine, MRI, or related specialties.</p>
+    </article>
+  </div>
+</section>
+
+<section class="roadmap-shell" id="career-directions">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Career directions</p>
+      <h2>What each path is actually about</h2>
+    </div>
+    <a class="text-link" href="{{ url_for('main.cold_email_tool') }}">Draft outreach</a>
+  </div>
+  <div class="career-track-grid">
+    {% for career in career_tracks %}
+      <article class="career-track-card">
+        <div>
+          <span>{{ career.tag }}</span>
+          <h3>{{ career.title }}</h3>
+          <p>{{ career.summary }}</p>
+        </div>
+        <dl>
+          <div>
+            <dt>Where it happens</dt>
+            <dd>{{ career.environment }}</dd>
+          </div>
+          <div>
+            <dt>Build during the degree</dt>
+            <dd>{{ career.build }}</dd>
+          </div>
+        </dl>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="content-split medphys-choice" id="how-to-choose">
+  <div>
+    <p class="eyebrow">Finding fit</p>
+    <h2>Use the degree to test your direction before you commit.</h2>
+    <p class="muted-copy">A good path is not just the one with the best title. It should match the kind of problems you want to spend years solving.</p>
+  </div>
+  <div class="tool-stack">
+    <div class="tool-card">
+      <strong>If you like clinical responsibility</strong>
+      <span>Shadow, volunteer, talk to physicists, learn the CAMPEP and residency path, and prove you can handle careful QA-style work.</span>
+    </div>
+    <div class="tool-card">
+      <strong>If you like code and images</strong>
+      <span>Build image-processing notebooks, learn validation, version your projects, and look for imaging, MRI, CT, PET, or AI research.</span>
+    </div>
+    <div class="tool-card">
+      <strong>If you like biology and mechanisms</strong>
+      <span>Prioritize biophysics, microscopy, soft matter, molecular systems, and supervisors whose questions feel physically interesting.</span>
+    </div>
+    <div class="tool-card">
+      <strong>If you like safety and systems</strong>
+      <span>Explore health physics, radiation protection, nuclear safety, technical regulation, field monitoring, and risk communication.</span>
+    </div>
+  </div>
+</section>
+
+<section class="notice-band medphys-notice">
+  <strong>Bottom line:</strong>
+  <span>Medical physics is not only one job. Treat the degree as a platform: physics depth plus medical context plus evidence of what you can build, measure, analyze, or explain.</span>
+  <a href="{{ url_for('main.guide_map') }}">Use the roadmap</a>
+</section>
+
+<section class="roadmap-shell sources-panel medphys-sources">
+  <p class="eyebrow">Verification layer</p>
+  <h2>Career and training sources</h2>
+  <div class="source-list">
+    {% for label, url in sources %}
+      <a href="{{ url }}" target="_blank" rel="noopener">{{ label }}</a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -669,6 +669,112 @@ h4 {
   max-width: 980px;
 }
 
+.roadmap-hero-clean {
+  align-items: start;
+  display: grid;
+  gap: 1.3rem;
+  grid-template-columns: minmax(0, 1fr) minmax(290px, 0.36fr);
+}
+
+.roadmap-start-card,
+.roadmap-flow article,
+.roadmap-stage-grid a,
+.roadmap-term-card.clean,
+.roadmap-now,
+.roadmap-detail-grid details,
+.research-hub-grid > article,
+.faculty-row,
+.guide-library.clean .map-group {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.roadmap-start-card {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+}
+
+.roadmap-start-card strong {
+  color: var(--maroon);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.roadmap-start-card p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.roadmap-flow {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding-top: 1.2rem;
+}
+
+.roadmap-flow article {
+  box-shadow: none;
+  min-height: 190px;
+  padding: 0.95rem;
+}
+
+.roadmap-flow span,
+.roadmap-term-marker span {
+  color: var(--gold);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 900;
+}
+
+.roadmap-flow strong {
+  display: block;
+  font-size: 1.02rem;
+  line-height: 1.2;
+  margin: 0.35rem 0 0.45rem;
+}
+
+.roadmap-flow p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.roadmap-stage-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.roadmap-stage-grid a {
+  color: inherit;
+  display: grid;
+  gap: 0.3rem;
+  min-height: 190px;
+  padding: 1rem;
+  text-decoration: none;
+  transition: border 150ms ease, transform 150ms ease;
+}
+
+.roadmap-stage-grid a:hover,
+.faculty-row:hover {
+  border-color: rgba(122, 37, 53, 0.42);
+  transform: translateY(-2px);
+}
+
+.roadmap-stage-grid span {
+  color: var(--maroon);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.roadmap-stage-grid small {
+  color: var(--muted);
+  display: block;
+}
+
 .roadmap-overview {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -739,10 +845,18 @@ h4 {
   gap: 0.9rem;
 }
 
+.roadmap-timeline.clean {
+  gap: 1rem;
+}
+
 .roadmap-term-card {
   display: grid;
   grid-template-columns: 58px minmax(0, 1fr);
   overflow: hidden;
+}
+
+.roadmap-term-card.clean {
+  box-shadow: none;
 }
 
 .roadmap-term-marker {
@@ -789,6 +903,79 @@ h4 {
 .roadmap-term-header > strong {
   font-size: clamp(1.05rem, 2vw, 1.45rem);
   line-height: 1.2;
+}
+
+.roadmap-term-header.clean {
+  border-bottom: 0;
+  grid-template-columns: minmax(190px, 0.25fr) minmax(0, 1fr);
+  padding-bottom: 0.35rem;
+}
+
+.roadmap-now {
+  background: var(--paper);
+  border-left: 4px solid var(--gold);
+  box-shadow: none;
+  margin-top: 0.75rem;
+  padding: 0.85rem 0.95rem;
+}
+
+.roadmap-now h4 {
+  color: var(--maroon);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.roadmap-now ul {
+  color: var(--ink);
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.roadmap-now li + li {
+  margin-top: 0.4rem;
+}
+
+.roadmap-detail-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 0.75rem;
+}
+
+.roadmap-detail-grid details,
+.nserc-panel.clean details,
+.guide-library.clean .map-group,
+.faculty-row {
+  box-shadow: none;
+}
+
+.roadmap-detail-grid summary,
+.nserc-panel.clean summary,
+.guide-library.clean summary,
+.faculty-row summary {
+  cursor: pointer;
+  font-weight: 850;
+  list-style-position: outside;
+}
+
+.roadmap-detail-grid details {
+  background: var(--paper);
+  padding: 0.75rem 0.75rem 0.75rem 0.95rem;
+}
+
+.roadmap-detail-grid ul,
+.nserc-panel.clean ul {
+  color: var(--muted);
+  margin: 0.65rem 0 0;
+  padding-left: 1.05rem;
+}
+
+.roadmap-detail-grid li + li,
+.nserc-panel.clean li + li {
+  margin-top: 0.35rem;
 }
 
 .roadmap-columns {
@@ -859,6 +1046,33 @@ h4 {
   padding: 1.1rem;
 }
 
+.research-hub-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 0.52fr) minmax(0, 0.48fr);
+}
+
+.research-hub-grid > article {
+  box-shadow: none;
+}
+
+.nserc-panel.clean h3,
+.outreach-template.clean h3 {
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  margin-bottom: 0.55rem;
+}
+
+.nserc-panel.clean details + details {
+  margin-top: 0.65rem;
+}
+
+.nserc-panel.clean details {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 0.8rem;
+}
+
 .faculty-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -896,11 +1110,85 @@ h4 {
   margin-bottom: 0.25rem;
 }
 
+.faculty-list {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.faculty-row {
+  overflow: hidden;
+  transition: border 150ms ease, transform 150ms ease;
+}
+
+.faculty-row summary {
+  align-items: baseline;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 190px minmax(0, 1fr);
+  padding: 0.85rem 1rem;
+}
+
+.faculty-row summary span {
+  color: var(--maroon);
+  font-weight: 900;
+}
+
+.faculty-row summary strong {
+  font-weight: 750;
+}
+
+.faculty-row-body {
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: 220px minmax(0, 1fr);
+  padding: 1rem;
+}
+
+.faculty-row-body > a {
+  color: var(--maroon-dark);
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.faculty-row-body dl,
+.faculty-row-body dd {
+  margin: 0;
+}
+
+.faculty-row-body dl {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.faculty-row-body dt {
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 900;
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+}
+
+.faculty-row-body dd {
+  color: var(--muted);
+}
+
 .outreach-template {
   display: grid;
   grid-template-columns: minmax(0, 0.55fr) minmax(320px, 0.45fr);
   gap: 1rem;
   padding: 1.1rem;
+}
+
+.outreach-template.clean {
+  align-content: start;
+  grid-template-columns: 1fr;
+}
+
+.outreach-template.clean .email-card {
+  margin-top: 0.3rem;
 }
 
 .email-card {
@@ -927,10 +1215,27 @@ h4 {
   gap: 1rem;
 }
 
+.guide-library.clean {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .guide-library .map-group {
   box-shadow: none;
   margin: 0;
   padding: 1rem;
+}
+
+.guide-library.clean .map-group {
+  padding: 0.9rem;
+}
+
+.guide-library.clean summary {
+  color: var(--maroon);
+  font-size: 1.05rem;
+}
+
+.guide-library.clean .compact-link:first-of-type {
+  margin-top: 0.75rem;
 }
 
 .sources-panel {
@@ -943,6 +1248,240 @@ h4 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.medphys-hero {
+  align-items: start;
+  display: grid;
+  gap: 1.4rem;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.38fr);
+}
+
+.medphys-snapshot,
+.medphys-truth-box,
+.medphys-pathway article,
+.medphys-prospects,
+.prospect-grid article,
+.career-track-card,
+.medphys-pillars article,
+.medphys-anchor-grid a {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.medphys-snapshot {
+  align-self: stretch;
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+}
+
+.medphys-snapshot strong {
+  color: var(--maroon);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.medphys-snapshot p,
+.medphys-pillars p,
+.medphys-truth-box li,
+.medphys-pathway p,
+.prospect-grid p,
+.career-track-card p,
+.career-track-card dd {
+  color: var(--muted);
+}
+
+.snapshot-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.snapshot-grid span {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--blue);
+  font-size: 0.85rem;
+  font-weight: 850;
+  padding: 0.55rem;
+}
+
+.medphys-anchor-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding-top: 1.3rem;
+}
+
+.medphys-anchor-grid a {
+  color: inherit;
+  display: grid;
+  gap: 0.2rem;
+  min-height: 126px;
+  padding: 0.9rem;
+  text-decoration: none;
+  transition: border 150ms ease, transform 150ms ease;
+}
+
+.medphys-anchor-grid a:hover,
+.career-track-card:hover {
+  border-color: rgba(122, 37, 53, 0.42);
+  transform: translateY(-2px);
+}
+
+.medphys-anchor-grid span {
+  color: var(--gold);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 900;
+}
+
+.medphys-anchor-grid small {
+  color: var(--muted);
+}
+
+.medphys-foundation {
+  align-items: stretch;
+}
+
+.medphys-foundation > div:first-child {
+  min-width: 0;
+}
+
+.medphys-pillars {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.medphys-pillars article {
+  box-shadow: none;
+  padding: 0.95rem;
+}
+
+.medphys-pillars span,
+.medphys-pathway span,
+.career-track-card span {
+  color: var(--maroon);
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 900;
+  margin-bottom: 0.45rem;
+  text-transform: uppercase;
+}
+
+.medphys-truth-box {
+  border-top: 4px solid var(--gold);
+  padding: 1rem;
+}
+
+.medphys-truth-box ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.medphys-truth-box li + li {
+  margin-top: 0.45rem;
+}
+
+.medphys-pathway {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.medphys-pathway article {
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  padding: 1rem;
+}
+
+.medphys-pathway h3 {
+  font-size: 1.18rem;
+}
+
+.medphys-pathway a {
+  color: var(--maroon-dark);
+  font-weight: 850;
+  margin-top: auto;
+}
+
+.medphys-prospects {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 0.48fr) minmax(0, 0.52fr);
+  padding: 1.1rem;
+}
+
+.prospect-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.prospect-grid article {
+  background: var(--paper);
+  box-shadow: none;
+  padding: 0.9rem;
+}
+
+.prospect-grid strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.career-track-grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.career-track-card {
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-height: 360px;
+  padding: 1rem;
+  transition: border 150ms ease, transform 150ms ease;
+}
+
+.career-track-card dl,
+.career-track-card dd {
+  margin: 0;
+}
+
+.career-track-card dl {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 0.85rem;
+}
+
+.career-track-card dt {
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 900;
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+}
+
+.medphys-choice {
+  align-items: start;
+}
+
+.medphys-notice {
+  margin-top: 3rem;
+}
+
+.medphys-sources {
+  padding-bottom: 3rem;
 }
 
 .flow-grid {
@@ -2767,6 +3306,13 @@ form.filter-bar.mentor-filter {
   .community-stats,
   .community-playbook,
   .flow-grid,
+  .roadmap-flow,
+  .roadmap-stage-grid,
+  .roadmap-detail-grid,
+  .guide-library.clean,
+  .medphys-anchor-grid,
+  .medphys-pathway,
+  .career-track-grid,
   .roadmap-overview,
   .roadmap-columns,
   .faculty-grid,
@@ -2776,6 +3322,11 @@ form.filter-bar.mentor-filter {
 
   .outreach-template,
   .roadmap-columns.two,
+  .roadmap-hero-clean,
+  .research-hub-grid,
+  .faculty-row-body,
+  .medphys-hero,
+  .medphys-prospects,
   .chat-prompt-grid {
     grid-template-columns: 1fr;
   }
@@ -2856,6 +3407,20 @@ form.filter-bar.mentor-filter {
   .quick-flow,
   .community-stats,
   .community-playbook,
+  .roadmap-hero-clean,
+  .roadmap-flow,
+  .roadmap-stage-grid,
+  .roadmap-detail-grid,
+  .research-hub-grid,
+  .faculty-row summary,
+  .faculty-row-body,
+  .guide-library.clean,
+  .medphys-hero,
+  .medphys-anchor-grid,
+  .medphys-pillars,
+  .medphys-pathway,
+  .medphys-prospects,
+  .career-track-grid,
   .roadmap-overview,
   .roadmap-term-card,
   .roadmap-term-header,
@@ -2922,6 +3487,11 @@ form.filter-bar.mentor-filter {
 
   .message-app-shell {
     padding-top: 1rem;
+  }
+
+  .medphys-pathway article,
+  .career-track-card {
+    min-height: 0;
   }
 
   .chat-sidebar-header,

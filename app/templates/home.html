@@ -18,7 +18,7 @@
   <aside class="hero-panel" aria-label="Start by stage">
     <h2>Choose your stage</h2>
     <div class="stage-grid">
-      <a href="{{ url_for('main.page', slug='medbiophys-vs-mrsc') }}"><span>Prospective</span><small>Compare programs</small></a>
+      <a href="{{ url_for('main.medical_physics') }}"><span>Prospective</span><small>See what medical physics leads to</small></a>
       <a href="{{ url_for('main.page', slug='level-ii-admission-guide') }}"><span>Level I</span><small>Plan admission</small></a>
       <a href="{{ url_for('main.page', slug='level-ii-survival-guide') }}"><span>Level II</span><small>Survive the load</small></a>
       <a href="{{ url_for('main.page', slug='research-guide') }}"><span>Upper-year</span><small>Find research</small></a>
@@ -40,6 +40,11 @@
     <h2>Jump into the guide that matches the question you are actually asking.</h2>
   </div>
   <div class="card-grid">
+    <a class="guide-card" href="{{ url_for('main.medical_physics') }}">
+      <span>Start here</span>
+      <h3>What is medical physics?</h3>
+      <p>The field, clinical and non-clinical paths, career prospects, and what each direction actually does.</p>
+    </a>
     <a class="guide-card" href="{{ url_for('main.page', slug='clinical-medical-physics-roadmap') }}">
       <span>Clinical</span>
       <h3>Become a medical physicist</h3>

@@ -1,43 +1,85 @@
 {% extends "base.html" %}
 {% block title %}Roadmap | Isocentre{% endblock %}
 {% block content %}
-<section class="page-hero roadmap-hero">
-  <p class="eyebrow">Semester roadmap</p>
-  <h1>What to do at each stage of MedBioPhys.</h1>
-  <p>Use this as the main path through Isocentre: courses, admission requirements, research, co-op, thesis, grad school, and outreach decisions in the order students actually face them.</p>
-  <div class="cta-row">
-    <a class="button primary" href="#term-roadmap">Start the roadmap</a>
-    <a class="button secondary" href="{{ url_for('main.program_tool') }}">Open planner</a>
-    <a class="button secondary" href="{{ url_for('main.sample_course_outline_page') }}">Sample 5-year outline</a>
+<section class="page-hero roadmap-hero roadmap-hero-clean">
+  <div>
+    <h1>Follow the MedBioPhys path without losing the thread.</h1>
+    <p>Start with the decision in front of you, then move term by term. The roadmap keeps requirements, courses, research, co-op, thesis, and career planning in one order instead of scattering them across the site.</p>
+    <div class="cta-row">
+      <a class="button primary" href="#start-here">Find my stage</a>
+      <a class="button secondary" href="#term-roadmap">Term roadmap</a>
+      <a class="button secondary" href="{{ url_for('main.program_tool') }}">Open planner</a>
+    </div>
   </div>
+  <aside class="roadmap-start-card" aria-label="Roadmap rule">
+    <strong>How to use this page</strong>
+    <p>Read the card for your current stage first. Then scan the next two terms only. Save the rest for when it becomes relevant.</p>
+  </aside>
 </section>
 
-<section class="roadmap-shell roadmap-overview" aria-label="Roadmap shortcuts">
-  <a href="{{ url_for('main.requirements_tool') }}">
+<section class="roadmap-shell roadmap-flow" aria-label="Roadmap flow">
+  <article>
     <span>01</span>
-    <strong>Admission buckets</strong>
-    <small>Protect Level II entry before electives.</small>
-  </a>
-  <a href="{{ url_for('main.courses') }}">
+    <strong>Choose the right program</strong>
+    <p>Confirm that you want physics-first training, not MRSc-style direct clinical professional training.</p>
+  </article>
+  <article>
     <span>02</span>
-    <strong>Course survival</strong>
-    <small>Know what each course unlocks and punishes.</small>
-  </a>
-  <a href="#nserc-usra">
+    <strong>Protect admission</strong>
+    <p>Keep calculus, physics, chemistry, and biology buckets intact before choosing nice-to-have electives.</p>
+  </article>
+  <article>
     <span>03</span>
-    <strong>NSERC USRA</strong>
-    <small>Turn interest into funded summer research.</small>
-  </a>
-  <a href="#faculty-outreach">
+    <strong>Survive the core</strong>
+    <p>Level II is where study systems, lab habits, and coding practice start to matter every week.</p>
+  </article>
+  <article>
     <span>04</span>
-    <strong>Faculty outreach</strong>
-    <small>Who to email, why, and what to say.</small>
-  </a>
-  <a href="{{ url_for('main.community') }}">
+    <strong>Build evidence</strong>
+    <p>Use research, co-op, thesis, projects, or portfolios to prove what kind of physicist you are becoming.</p>
+  </article>
+  <article>
     <span>05</span>
-    <strong>People layer</strong>
-    <small>Mentors, reviews, and upper-year questions.</small>
-  </a>
+    <strong>Choose the next credential</strong>
+    <p>Clinical physics, health physics, imaging AI, biophysics, industry, and grad school have different next steps.</p>
+  </article>
+</section>
+
+<section class="roadmap-shell" id="start-here">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Start here</p>
+      <h2>Pick the question you are actually facing.</h2>
+    </div>
+    <a class="text-link" href="{{ url_for('main.search') }}">Search everything</a>
+  </div>
+  <div class="roadmap-stage-grid">
+    <a href="{{ url_for('main.medical_physics') }}">
+      <span>Prospective</span>
+      <strong>What does this degree lead to?</strong>
+      <small>Medical physics, imaging, health physics, biophysics, medtech, and other outcomes.</small>
+    </a>
+    <a href="{{ url_for('main.page', slug='level-ii-admission-guide') }}">
+      <span>Level I</span>
+      <strong>Am I protecting the right requirements?</strong>
+      <small>Admission buckets, recommended first-year choices, and avoidable planning mistakes.</small>
+    </a>
+    <a href="{{ url_for('main.page', slug='level-ii-survival-guide') }}">
+      <span>Level II</span>
+      <strong>How do I handle the physics shock year?</strong>
+      <small>Core courses, study systems, lab reports, code, and workload management.</small>
+    </a>
+    <a href="{{ url_for('main.page', slug='upper-year-planning') }}">
+      <span>Upper-year</span>
+      <strong>Which track am I building?</strong>
+      <small>Course List choices, thesis, research, co-op, and career direction.</small>
+    </a>
+    <a href="{{ url_for('main.page', slug='grad-school-campep-guide') }}">
+      <span>Graduating</span>
+      <strong>What happens after MedBioPhys?</strong>
+      <small>CAMPEP, grad school, residency, research, industry, and adjacent routes.</small>
+    </a>
+  </div>
 </section>
 
 <section class="roadmap-shell" id="term-roadmap">
@@ -48,54 +90,57 @@
     </div>
     <a class="text-link" href="{{ url_for('main.resources') }}">Official sources</a>
   </div>
-  <div class="roadmap-timeline">
+  <div class="roadmap-timeline clean">
     {% for item in roadmap %}
-      <article class="roadmap-term-card">
+      <article class="roadmap-term-card clean">
         <div class="roadmap-term-marker">
-          <span>{{ loop.index }}</span>
+          <span>{{ "%02d"|format(loop.index) }}</span>
         </div>
         <div class="roadmap-term-body">
-          <div class="roadmap-term-header">
+          <div class="roadmap-term-header clean">
             <div>
               <p class="eyebrow">{{ item.stage }}</p>
               <h3>{{ item.term }}</h3>
             </div>
             <strong>{{ item.headline }}</strong>
           </div>
-          <div class="roadmap-columns">
-            <section>
-              <h4>Courses to plan</h4>
+
+          <section class="roadmap-now">
+            <h4>Do this now</h4>
+            <ul>
+              {% for entry in item.actions %}
+                <li>{{ entry }}</li>
+              {% endfor %}
+            </ul>
+          </section>
+
+          <div class="roadmap-detail-grid">
+            <details>
+              <summary>Courses to plan</summary>
               <ul>
                 {% for entry in item.courses %}
                   <li>{{ entry }}</li>
                 {% endfor %}
               </ul>
-            </section>
-            <section>
-              <h4>Requirements to protect</h4>
+            </details>
+            <details>
+              <summary>Requirements to protect</summary>
               <ul>
                 {% for entry in item.requirements %}
                   <li>{{ entry }}</li>
                 {% endfor %}
               </ul>
-            </section>
-            <section>
-              <h4>Research / co-op move</h4>
+            </details>
+            <details>
+              <summary>Research / co-op move</summary>
               <ul>
                 {% for entry in item.research %}
                   <li>{{ entry }}</li>
                 {% endfor %}
               </ul>
-            </section>
-            <section>
-              <h4>Do this now</h4>
-              <ul>
-                {% for entry in item.actions %}
-                  <li>{{ entry }}</li>
-                {% endfor %}
-              </ul>
-            </section>
+            </details>
           </div>
+
           <div class="roadmap-links">
             {% for title, target in item.links %}
               {% if target.startswith("route:") %}
@@ -111,113 +156,114 @@
   </div>
 </section>
 
-<section class="roadmap-shell" id="nserc-usra">
-  <div class="nserc-panel">
+<section class="roadmap-shell" id="research-hub">
+  <div class="section-heading">
     <div>
-      <p class="eyebrow">Research funding</p>
-      <h2>{{ nserc.headline }}</h2>
-      <p class="muted-copy">Treat NSERC as a supervisor-fit application, not a scholarship form you fill out alone. The strongest applications usually start with a professor who can see exactly how you would contribute.</p>
+      <p class="eyebrow">Research and outreach</p>
+      <h2>When you are ready to contact people, use this section.</h2>
     </div>
-    <div class="roadmap-columns two">
-      <section>
-        <h3>Official facts to know</h3>
+    <a class="text-link" href="{{ url_for('main.cold_email_tool') }}">Draft an email</a>
+  </div>
+  <div class="research-hub-grid">
+    <article class="nserc-panel clean" id="nserc-usra">
+      <p class="eyebrow">NSERC USRA</p>
+      <h3>{{ nserc.headline }}</h3>
+      <p class="muted-copy">Treat NSERC as a supervisor-fit application, not a scholarship form you fill out alone.</p>
+      <details open>
+        <summary>Official facts to know</summary>
         <ul>
           {% for fact in nserc.official_facts %}
             <li>{{ fact }}</li>
           {% endfor %}
         </ul>
-      </section>
-      <section>
-        <h3>What makes it strong</h3>
+      </details>
+      <details>
+        <summary>What makes it strong</summary>
         <ul>
           {% for point in nserc.strong_application %}
             <li>{{ point }}</li>
           {% endfor %}
         </ul>
-      </section>
-    </div>
+      </details>
+    </article>
+
+    <article class="outreach-template clean">
+      <div>
+        <p class="eyebrow">How to reach out</p>
+        <h3>Use a specific, short, evidence-backed email.</h3>
+        <ul>
+          {% for rule in outreach.rules %}
+            <li>{{ rule }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="email-card">
+        <span>Subject</span>
+        <strong>{{ outreach.subject }}</strong>
+        {% for paragraph in outreach.body %}
+          <p>{{ paragraph }}</p>
+        {% endfor %}
+      </div>
+    </article>
   </div>
 </section>
 
 <section class="roadmap-shell" id="faculty-outreach">
   <div class="section-heading">
     <div>
-      <p class="eyebrow">Who to reach out to</p>
-      <h2>McMaster faculty starting points</h2>
+      <p class="eyebrow">Faculty starting points</p>
+      <h2>Scan by research fit before opening details.</h2>
     </div>
-    <a class="text-link" href="{{ url_for('main.cold_email_tool') }}">Draft an email</a>
   </div>
   <p class="roadmap-intro">Availability changes every term. Use these as targeted starting points, then verify current projects on faculty pages before emailing.</p>
-  <div class="faculty-grid">
+  <div class="faculty-list">
     {% for faculty in faculty_contacts %}
-      <article class="faculty-card">
-        <div class="faculty-card-header">
-          <div>
-            <h3>{{ faculty.name }}</h3>
-            <p>{{ faculty.area }}</p>
-          </div>
+      <details class="faculty-row">
+        <summary>
+          <span>{{ faculty.name }}</span>
+          <strong>{{ faculty.area }}</strong>
+        </summary>
+        <div class="faculty-row-body">
           <a href="mailto:{{ faculty.email }}?subject=Undergraduate%20research%20inquiry">{{ faculty.email }}</a>
+          <dl>
+            <div>
+              <dt>Best fit</dt>
+              <dd>{{ faculty.fit }}</dd>
+            </div>
+            <div>
+              <dt>What you might do</dt>
+              <dd>{{ faculty.student_work }}</dd>
+            </div>
+            <div>
+              <dt>Source note</dt>
+              <dd>{{ faculty.source }}</dd>
+            </div>
+          </dl>
         </div>
-        <dl>
-          <div>
-            <dt>Best fit</dt>
-            <dd>{{ faculty.fit }}</dd>
-          </div>
-          <div>
-            <dt>What you might do</dt>
-            <dd>{{ faculty.student_work }}</dd>
-          </div>
-          <div>
-            <dt>Source note</dt>
-            <dd>{{ faculty.source }}</dd>
-          </div>
-        </dl>
-      </article>
+      </details>
     {% endfor %}
-  </div>
-</section>
-
-<section class="roadmap-shell">
-  <div class="outreach-template">
-    <div>
-      <p class="eyebrow">How to reach out</p>
-      <h2>Use a specific, short, evidence-backed email.</h2>
-      <p class="muted-copy">The goal is not to sound impressive. The goal is to make the professor’s decision easy: what you want, why their group, and what evidence you bring.</p>
-      <ul>
-        {% for rule in outreach.rules %}
-          <li>{{ rule }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="email-card">
-      <span>Subject</span>
-      <strong>{{ outreach.subject }}</strong>
-      {% for paragraph in outreach.body %}
-        <p>{{ paragraph }}</p>
-      {% endfor %}
-    </div>
   </div>
 </section>
 
 <section class="roadmap-shell">
   <div class="section-heading">
     <div>
-      <p class="eyebrow">Still need a page directory?</p>
-      <h2>Browse the guide library</h2>
+      <p class="eyebrow">Guide library</p>
+      <h2>Open the full directory only when you need it.</h2>
     </div>
     <a class="text-link" href="{{ url_for('main.search') }}">Search everything</a>
   </div>
-  <div class="guide-library">
+  <div class="guide-library clean">
     {% for section, pages in grouped_pages.items() %}
-      <article class="map-group">
-        <h3>{{ section }}</h3>
+      <details class="map-group" {% if loop.first %}open{% endif %}>
+        <summary>{{ section }}</summary>
         {% for page in pages %}
           <a class="compact-link" href="{{ url_for('main.page', slug=page.slug) }}">
             <strong>{{ page.title }}</strong>
             <small>{{ page.summary }}</small>
           </a>
         {% endfor %}
-      </article>
+      </details>
     {% endfor %}
   </div>
 </section>
